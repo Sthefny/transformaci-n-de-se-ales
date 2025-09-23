@@ -213,13 +213,13 @@ elif menu == "Punto 2":
             else:
                 xn2[k] = 0
 
-        # ------------------------------------------------------
-        # Función de transformación discreta
+ # ------------------------------------------------------
+# Función de transformación discreta
         # ------------------------------------------------------
         def transformar_discreta(n, x, t0, M, metodo):
             if metodo == 1:
                 # Método 1: primero desplazamiento, luego escalamiento
-                n_des = n + t0
+                n_des = n - t0
                 if M == 1:
                     return (n_des, x)
                 elif M < -1 or M > 1:
@@ -257,18 +257,18 @@ elif menu == "Punto 2":
                 # Método 2: primero escalamiento, luego desplazamiento
                 des_escalado = t0 / M
                 if M == 1:
-                    return (n + int(des_escalado), x)
+                    return (n - int(des_escalado), x)   # corregido signo
                 elif M > 1 or M < -1:
                     D = int(abs(M))
                     n_diez = n[::D]
                     x_diez = x[::D]
-                    return (n_diez + int(des_escalado), x_diez)
+                    return (n_diez - int(des_escalado), x_diez)  # corregido signo
                 else:  # -1 <= M < 1 → Interpolación
                     L = int(round(1.0 / abs(M)))
                     L_n = len(x)
                     N = L * (L_n - 1) + 1
                     nI_base = n[0] + np.arange(N) / L
-                    nI = nI_base + des_escalado
+                    nI = nI_base - des_escalado   # corregido signo
                     xn_0 = np.zeros(N, dtype=float)
                     xn_0[::L] = x
                     xn_esc = xn_0.copy()
@@ -324,6 +324,7 @@ elif menu == "Punto 2":
             axs[2].stem(nI, xlin); axs[2].set_title('Interpolación lineal'); axs[2].grid(True)
             plt.tight_layout()
             st.pyplot(fig)
+
 
 
 # ================================================================
