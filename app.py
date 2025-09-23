@@ -113,10 +113,6 @@ elif menu == "Punto 1":
     ax.grid(True)
     st.pyplot(fig)
     st.markdown("---")
-
-# ================================================================
-# PUNTO 2: TRANSFORMACIONES
-# ================================================================
 elif menu == "Punto 2":
     st.header("Punto 2: Transformaciones")
 
@@ -158,285 +154,36 @@ elif menu == "Punto 2":
         t2 = np.concatenate((t2a, t2b, t2c, t2d))
         x2 = np.concatenate((x2a, x2b, x2c, x2d))
 
-        # Definición de métodos
-        def metodo1(t, retraso, escalamiento):
-            t_desplazado = t + retraso
-            return t_desplazado / escalamiento
+        st.sidebar.header("Configuración - Señales continuas")
+        tipo = st.sidebar.selectbox("Seleccione tipo de señal", ["Señal continua 1", "Señal continua 2"])
+        retraso = st.sidebar.number_input("Valor de t0 (desplazamiento)", value=0.0, step=0.5)
+        escala = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
 
-        def metodo2(t, retraso, escalamiento):
-            t_escalado = t / escalamiento
-            return t_escalado + (retraso / escalamiento)
-
-        st.subheader("Transformación de señales continuas")
-
-        # Selección
-        op1 = st.sidebar.selectbox("Seleccione la función continua", ["señal continua 1","señal continua 2"])
-        metodo = st.sidebar.selectbox(
-            "Seleccione el método",
-            [1, 2],
-            format_func=lambda x: "Metodo #1" if x == 1 else "Metodo #2"
-        )
-        t0 = st.sidebar.number_input("Valor de retraso (t0)", value=0.0, step=0.5)
-        esc = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
-
-        # Señal base
-        if op1 == 1:
+        if tipo == "Señal continua 1":
             t_base, x_base = t1, x1
         else:
             t_base, x_base = t2, x2
 
-        # Aplicar
-        if metodo == 1:
-            t_trans = metodo1(t_base, t0, esc)
-        else:
-            t_trans = metodo2(t_base, t0, esc)
+        # Transformaciones
+        t_original = t_base
+        x_original = x_base
+        t_desplazada = t_base + retraso
+        t_escalada = t_desplazada / escala
+        t_final = t_escalada
 
-        # Gráfica
-                # Señal base
-        if op1 == 1:
-            t_base, x_base = t1, x1
-        else:
-            t_base, x_base = t2, x2
-
-        # Gráfica 1: Señal original
-        fig1, ax1 = plt.subplots(figsize=(6,4))
-        ax1.plot(t_base, x_base, color="blue")
-        ax1.set_title("1. Señal original")
-        ax1.grid(True)
-        st.pyplot(fig1)
-        st.markdown("---")
-
-        # Método 1: desplazar → escalar
-        if metodo == 1:
-            # Paso 1: Desplazamiento
-            t_desplazada = t_base + t0
-            fig2, ax2 = plt.subplots(figsize=(6,4))
-            ax2.plot(t_desplazada, x_base, color="green")
-            ax2.set_title(f"2. Señal desplazada (t0={t0})")
-            ax2.grid(True)
-            st.pyplot(fig2)
-            st.markdown("---")
-
-            # Paso 2: Escalamiento
-            t_escalada = t_desplazada / esc
-            fig3, ax3 = plt.subplots(figsize=(6,4))
-            ax3.plot(t_escalada, x_base, color="red")
-            ax3.set_title(f"3. Señal escalada despues del desplazamiento (a={esc})")
-            ax3.grid(True)
-            st.pyplot(fig3)
-            st.markdown("---")
-
-        # Método 2: escalar → desplazar
-        elif metodo == 2:
-            # Paso 1: Escalamiento
-            t_escalada = t_base / esc
-            fig2, ax2 = plt.subplots(figsize=(6,4))
-            ax2.plot(t_escalada, x_base, color="orange")
-            ax2.set_title(f"2. Señal escalada (a={esc})")
-            ax2.grid(True)
-            st.pyplot(fig2)
-            st.markdown("---")
-
-            # Paso 2: Desplazamiento
-            t_final = t_escalada + (t0 / esc)
-            fig3, ax3 = plt.subplots(figsize=(6,4))
-            ax3.plot(t_final, x_base, color="red")
-            ax3.set_title(f"3. Señal desplazada después del escalamiento (t0={t0})")
-            ax3.grid(True)
-            st.pyplot(fig3)
-            st.markdown("---")
-
-
-        # ----------------------------------------------------------
-        # Señales discretas con transformaciones
-        # ----------------------------------------------------------
-    elif Tipo == "Dominio discreto":
-
-        st.subheader("Transformación de señales discretas")
-
-        # --- Secuencia discreta 1 ---
-        n_in1, n_fin1 = -5, 16
-        n1 = np.arange(n_in1, n_fin1+1)
-        xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
-
-        # --- Secuencia discreta 2 ---
-        n_in2, n_fin2 = -10, 10
-        n2 = np.arange(n_in2, n_fin2+1)
-        xn2 = np.zeros(len(n2), dtype=float)
-        for i in n2:
-            k = i - n_in2
-            if -10 <= i <= -6:
-                xn2[k] = 0
-            elif -5 <= i <= 0:
-                xn2[k] = (3/4)**i
-            elif 1 <= i <= 5:
-                xn2[k] = (7/4)**i
-            elif 6 <= i <= 10:
-                xn2[k] = 0
-            else:
-                xn2[k] = 0
-
-        # Función de transformación discreta
-        def transformar_discreta(n, x, t0, M, metodo):
-            if metodo == 1:
-                # Método 1: primero desplazamiento, luego escalamiento
-                n_des = n + t0
-                if M == 1:
-                    return (n_des, x)
-                elif M < -1 or M > 1:
-                    D = int(abs(M))
-                    return (n_des[::D], x[::D])
-                else:  # -1 <= M < 1 → Interpolación
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-                    nI = n_des[0] + np.arange(N) / L
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i-1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i+1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-
-            elif metodo == 2:
-                # Método 2: primero escalamiento, luego desplazamiento
-                des_escalado = t0 / M
-                if M == 1:
-                    return (n + int(des_escalado), x)
-                elif M > 1 or M < -1:
-                    D = int(abs(M))
-                    n_diez = n[::D]
-                    x_diez = x[::D]
-                    return (n_diez + int(des_escalado), x_diez)
-                else:  # -1 <= M < 1 → Interpolación
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-                    nI_base = n[0] + np.arange(N) / L
-                    nI = nI_base + des_escalado
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i-1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i+1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-            else:
-                raise ValueError("Método no válido (use 1 o 2).")
-
-        # ----------------------------
-        # Interfaz gráfica con Streamlit
-        # ----------------------------
-        op = st.sidebar.selectbox("Seleccione la secuencia discreta", ["secuencia discreta 1", "secuencia discreta 2"])
-        metodo = st.sidebar.selectbox("Seleccione el método", [1, 2], format_func=lambda x: f"Método #{x}")
-        t0 = st.sidebar.number_input("Valor de retraso (t0)", value=0, step=1)
-        M = st.sidebar.number_input("Valor de escalamiento (M)", value=1.0, step=0.5)
-
-        if op == "secuencia discreta 1":
-            n_base, x_base = n1, xn1
-        else:
-            n_base, x_base = n2, xn2
-
-        # Procesar según el rango de M
-        if M < -1 or M >= 1:
-            n_out, x_out = transformar_discreta(n_base, x_base, t0, M, metodo)
-            fig, ax = plt.subplots(figsize=(7,4))
-            ax.stem(n_out, x_out)
-            ax.set_title(f'Secuencia {op[-1]} (método {metodo}) — t0={t0}, M={M}')
-            ax.grid(True)
-            st.pyplot(fig)
-
-        elif -1 <= M < 1:
-            nI, x0, xesc, xlin = transformar_discreta(n_base, x_base, t0, M, metodo)
-            fig, axs = plt.subplots(3, 1, figsize=(7, 10))
-            axs[0].stem(nI, x0);   axs[0].set_title('Interpolación por ceros');   axs[0].grid(True)
-            axs[1].stem(nI, xesc); axs[1].set_title('Interpolación por escalón'); axs[1].grid(True)
-            axs[2].stem(nI, xlin); axs[2].set_title('Interpolación lineal');      axs[2].grid(True)
-            plt.tight_layout()
-            st.pyplot(fig)
-
-
-
-# ================================================================
-# PUNTO 4: CARGA DE ARCHIVOS
-# ================================================================
-elif menu == "Punto 4":
-    st.header("Punto 4: Señales muestreadas y sobre muestreo")
-
-    # Subir archivos .txt
-    st.sidebar.subheader("Carga de señales")
-    file1 = st.sidebar.file_uploader("Subir señal muestreada a 2 kHz", type=["txt"])
-    file2 = st.sidebar.file_uploader("Subir señal muestreada a 2.2 kHz", type=["txt"])
-
-    if file1 is not None and file2 is not None:
-        # Cargar los datos de los archivos
-        data1 = np.loadtxt(file1)
-        data2 = np.loadtxt(file2)
-
-        # Ejes de tiempo (asumiendo que los .txt tienen solo los valores de amplitud)
-        fs1 = 2000   # Hz
-        fs2 = 2200   # Hz
-        t1 = np.arange(len(data1)) / fs1
-        t2 = np.arange(len(data2)) / fs2
-
-        # Mostrar gráficas originales
-        fig, ax = plt.subplots(2, 1, figsize=(7, 5))
-        ax[0].plot(t1, data1, label="Señal 1 (2 kHz)", color="blue")
-        ax[0].set_title("Señal muestreada a 2 kHz")
-        ax[0].grid(True)
-
-        ax[1].plot(t2, data2, label="Señal 2 (2.2 kHz)", color="green")
-        ax[1].set_title("Señal muestreada a 2.2 kHz")
-        ax[1].grid(True)
-
+        # Mostrar gráficas
+        fig, axs = plt.subplots(4, 1, figsize=(7, 12))
+        axs[0].plot(t_original, x_original, color="blue")
+        axs[0].set_title("1. Señal original")
+        axs[1].plot(t_desplazada, x_original, color="green")
+        axs[1].set_title(f"2. Señal desplazada (t0={retraso})")
+        axs[2].plot(t_escalada, x_original, color="orange")
+        axs[2].set_title(f"3. Señal escalada (a={escala})")
+        axs[3].plot(t_final, x_original, color="red")
+        axs[3].set_title("4. Señal final")
+        for ax in axs: ax.grid(True)
         plt.tight_layout()
         st.pyplot(fig)
-        st.markdown("---")
-
-    else:
-        st.info("Por favor sube los dos archivos .txt para continuar.")
-
 
 # ================================================================
 # PUNTO 3: Retardo, escalamiento y suma de señales
@@ -586,6 +333,74 @@ elif menu == "Punto 3":
         ax4.grid(True); ax4.legend()
         st.pyplot(fig4)
 
+# ================================================================
+# PUNTO 4: CARGA DE ARCHIVOS Y SUMA DE SEÑALES
+# ================================================================
+elif menu == "Punto 4":
+    st.header("Punto 4: Señales muestreadas y sobre muestreo")
+
+    # Subir archivos .txt
+    st.sidebar.subheader("Carga de señales")
+    file1 = st.sidebar.file_uploader("Subir señal muestreada a 2 kHz", type=["txt"])
+    file2 = st.sidebar.file_uploader("Subir señal muestreada a 2.2 kHz", type=["txt"])
+
+    if file1 is not None and file2 is not None:
+        # Cargar los datos de los archivos
+        data1 = np.loadtxt(file1)
+        data2 = np.loadtxt(file2)
+
+        # Frecuencias
+        f1 = 2000
+        f2 = 2200
+        delta1 = 1 / f1
+        delta2 = 1 / f2
+        t1 = np.arange(len(data1)) * delta1
+        t2 = np.arange(len(data2)) * delta2
+
+        # Gráficas iniciales
+        fig, ax = plt.subplots()
+        ax.plot(t1, data1, label="Señal 1 (2 kHz)", color="blue")
+        ax.set_title("Señal 1")
+        ax.grid(True)
+        st.pyplot(fig)
+
+        fig, ax = plt.subplots()
+        ax.plot(t2, data2, label="Señal 2 (2.2 kHz)", color="orange")
+        ax.set_title("Señal 2")
+        ax.grid(True)
+        st.pyplot(fig)
+
+        # Muestreo común
+        fs = 22000  # mcm de 2000 y 2200
+        deltas = 1 / fs
+        min_time = min(t1[-1], t2[-1])
+        t_com = np.arange(0, min_time, deltas)
+
+        x1_n = np.interp(t_com, t1, data1)
+        x2_n = np.interp(t_com, t2, data2)
+
+        # Graficar señales re-muestreadas
+        fig, ax = plt.subplots()
+        ax.plot(t_com, x1_n, label="Señal 1 re-muestreada")
+        ax.legend()
+        st.pyplot(fig)
+
+        fig, ax = plt.subplots()
+        ax.plot(t_com, x2_n, label="Señal 2 re-muestreada", color="orange")
+        ax.legend()
+        st.pyplot(fig)
+
+        # Suma de señales
+        x_total = x1_n + x2_n
+        fig, ax = plt.subplots()
+        ax.plot(t_com, x_total, label="Señal total", color="green")
+        ax.set_title("Suma de Señales")
+        ax.legend()
+        ax.grid(True)
+        st.pyplot(fig)
+
+    else:
+        st.info("Por favor sube los dos archivos .txt para continuar.")
 
 
 # ================================================================
