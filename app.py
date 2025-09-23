@@ -113,317 +113,6 @@ elif menu == "Punto 1":
     ax.grid(True)
     st.pyplot(fig)
     st.markdown("---")
-elif menu == "Punto 2":
-    st.header("Punto 2: Transformaciones")
-
-    Tipo = st.sidebar.selectbox(
-        "Seleccione el tipo de señal",
-        ["Dominio continuo", "Dominio discreto"]
-    )
-
-    # ----------------------------------------------------------
-    # Señales continuas con transformaciones
-    # ----------------------------------------------------------
-    if Tipo == "Dominio continuo":
-        fs = 100
-        delt = 1/fs
-
-        # Señal continua 1
-        p1, p2, p3, p4, p5 = -2, -1, 1, 3, 4
-        t1a = np.arange(p1, p2, delt)
-        t1b = np.arange(p2, p3, delt)
-        t1c = np.arange(p3, p4, delt)
-        t1d = np.arange(p4, p5+delt, delt)
-        x1a = 2*t1a+4
-        x1b = 2*np.ones(len(t1b))
-        x1c = 3*np.ones(len(t1c))
-        x1d = -3*t1d+12
-        t1 = np.concatenate((t1a, t1b, t1c, t1d))
-        x1 = np.concatenate((x1a, x1b, x1c, x1d))
-
-        # Señal continua 2
-        p1, p2, p3, p4, p5 = -3, -2, 0, 2, 3
-        t2a = np.arange(p1, p2, delt)
-        t2b = np.arange(p2, p3, delt)
-        t2c = np.arange(p3, p4, delt)
-        t2d = np.arange(p4, p5+delt, delt)
-        x2a = t2a+3
-        x2b = (t2b/2)+3
-        x2c = -t2c+3
-        x2d = np.ones(len(t2d))
-        t2 = np.concatenate((t2a, t2b, t2c, t2d))
-        x2 = np.concatenate((x2a, x2b, x2c, x2d))
-
-        # ----------------------------------------------------------
-        # Definición de funciones de transformación
-        # ----------------------------------------------------------
-        def metodo1(t, retraso, escalamiento):
-            # Primero desplazamiento y luego escalamiento
-            t_desplazado = t - retraso
-            t_transformado = t_desplazado / escalamiento
-            return t_desplazado, t_transformado
-
-        def metodo2(t, retraso, escalamiento):
-            # Primero escalamiento y luego desplazamiento
-            t_escalado = t / escalamiento
-            t_transformado = t_escalado - (retraso / escalamiento)
-            return t_escalado, t_transformado
-
-        # ----------------------------------------------------------
-        # Configuración en la barra lateral
-        # ----------------------------------------------------------
-        st.sidebar.header("Configuración - Señales continuas")
-        tipo = st.sidebar.selectbox("Seleccione tipo de señal", ["Señal continua 1", "Señal continua 2"])
-        metodo = st.sidebar.selectbox("Método de transformación", ["Metodo 1", "Metodo 2"])
-        retraso = st.sidebar.number_input("Valor de t0 (desplazamiento)", value=0.0, step=0.5)
-        escala = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
-
-        # Selección de señal base
-        if tipo == "Señal continua 1":
-            t_base, x_base = t1, x1
-        else:
-            t_base, x_base = t2, x2
-
-        # Aplicar método de transformación
-        if metodo == ("Metodo 1"):
-            # Desplazar primero
-            t_desplazada, t_final = metodo1(t_base, retraso, escala)
-            t_intermedia = t_desplazada  # desplazada
-            t_siguiente = t_final        # después escalada
-            titulos = [
-                "1. Señal original",
-                f"2. Señal desplazada (t0={retraso})",
-                f"3. Señal escalada (a={escala})",
-                "4. Señal final"
-            ]
-        else:
-            # Escalar primero
-            t_escalada, t_final = metodo2(t_base, retraso, escala)
-            t_intermedia = t_escalada    # escalada
-            t_siguiente = t_final        # después desplazada
-            titulos = [
-                "1. Señal original",
-                f"2. Señal escalada (a={escala})",
-                f"3. Señal desplazada (t0={retraso})",
-                "4. Señal final"
-            ]
-
-        # ----------------------------------------------------------
-        # Mostrar gráficas en orden
-        # ----------------------------------------------------------
-        fig, axs = plt.subplots(4, 1, figsize=(7, 12))
-
-        axs[0].plot(t_base, x_base, color="blue")
-        axs[0].set_title(titulos[0])
-
-        axs[1].plot(t_intermedia, x_base, color="green")
-        axs[1].set_title(titulos[1])
-
-        axs[2].plot(t_siguiente, x_base, color="orange")
-        axs[2].set_title(titulos[2])
-
-        axs[3].plot(t_final, x_base, color="red")
-        axs[3].set_title(titulos[3])
-
-        for ax in axs: ax.grid(True)
-        plt.tight_layout()
-        st.pyplot(fig)
-
-
-
-    # ----------------------------------------------------------
-# Señales discretas con transformaciones
-# ----------------------------------------------------------
-    elif Tipo == "Dominio discreto":
-
-        n_in1, n_fin1 = -5, 16
-        n1 = np.arange(n_in1, n_fin1+1)
-        xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
-
-        # --- Secuencia discreta 2 ---
-        n_in2, n_fin2 = -10, 10
-        n2 = np.arange(n_in2, n_fin2+1)
-        xn2 = np.zeros(len(n2), dtype=float)
-        for i in n2:
-            k = i - n_in2
-            if -10 <= i <= -6:
-                xn2[k] = 0
-            elif -5 <= i <= 0:
-                xn2[k] = (3/4)**i
-            elif 1 <= i <= 5:
-                xn2[k] = (7/4)**i
-            elif 6 <= i <= 10:
-                xn2[k] = 0
-            else:
-                xn2[k] = 0
-
-        def trans_discreta(n, x, t0, M, metodo):
-            n_in = n[0]
-            n_fin = n[-1]
-
-            if metodo == 1:
-                # ---- Método 1: desplazamiento → escalamiento ----
-                n_des = n - t0
-
-                if M == 1:
-                    return (n_des, x)
-
-                elif M == -1:
-                    nI = -n_des[::-1]
-                    x_mod = x[::-1]
-                    return (nI, x_mod)
-
-                elif abs(M) > 1:
-                    # Escalamiento (submuestreo)
-                    D = int(abs(M))
-                    x_mod = x[::-D] if M < 0 else x[::D]
-
-                    n_des_escalado = n_des / M
-                    nI = n_des_escalado[::-D] if M < 0 else n_des_escalado[::D]
-
-                    return (nI, x_mod)
-
-                else:  # Interpolación: -1 < M < 1
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i - 1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i + 1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-
-                    nI = np.linspace(n_des[0] / M, n_des[-1] / M, N)
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-
-            elif metodo == 2:
-                # ---- Método 2: escalamiento → desplazamiento ----
-                des_escalado = t0 / M
-
-                if M == 1:
-                    nI = n - int(des_escalado)
-                    return (nI, x)
-
-                elif M == -1:
-                    x_mod = x[::-1]
-                    n_escalado = -n[::-1]
-                    nI = n_escalado + int(des_escalado)
-                    return (nI, x_mod)
-
-                elif abs(M) > 1:
-                    D = int(abs(M))
-                    x_mod = x[::-D] if M < 0 else x[::D]
-
-                    n_escalado = n / M
-                    nI = n_escalado[::-D] if M < 0 else n_escalado[::D]
-                    nI = nI - des_escalado  # Aplicar desplazamiento
-
-                    return (nI, x_mod)
-
-                else:  # Interpolación: -1 < M < 1
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i - 1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i + 1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-
-                    # Tiempo escalado y desplazado
-                    n_escalado = n / M
-                    nI = np.linspace(n_escalado[0] - des_escalado, n_escalado[-1] - des_escalado, N)
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-
-            else:
-                raise ValueError("Método no válido (use 1 o 2).")
-
-        # --- Aquí el bloque de ejecución ---
-        print("Seleccione la secuencia discreta a transformar (1 o 2): ")
-        op = int(input())
-
-        metodo = int(input("Seleccione el método (1: desplazar→escalar, 2: escalar→desplazar con t0/M): "))
-        t0 = int(input("Ingrese el valor del desplazamiento (entero): "))
-        M = float(input("Ingrese escalamiento: "))
-
-        if op == 1:
-            if abs(M)>=1:
-                n_out, x_out = trans_discreta(n1, xn1, t0, M, metodo)
-                plt.stem(n_out, x_out)
-                plt.title(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
-                plt.grid(); plt.show()
-            elif  -1 < M < 1 : # --> INTERPOLACIONES
-                nI, x0, xesc, xlin = trans_discreta(n1, xn1, t0, M, metodo)
-                plt.figure(figsize=(6,8))
-                plt.subplot(3,1,1); plt.stem(nI, x0);   plt.title('Interp. por ceros');  plt.grid()
-                plt.subplot(3,1,2); plt.stem(nI, xesc); plt.title('Interp. por escalón');plt.grid()
-                plt.subplot(3,1,3); plt.stem(nI, xlin); plt.title('Interp. lineal');     plt.grid()
-                plt.suptitle(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
-                plt.tight_layout(); plt.show()
-            else:
-                print("Error.")
-
-        elif op == 2:
-            if abs(M)>=1:
-                n_out, x_out = trans_discreta(n2, xn2, t0, M, metodo)
-                plt.stem(n_out, x_out)
-                plt.title(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
-                plt.grid(); plt.show()
-            elif -1 < M < 1:
-                nI, x0, xesc, xlin = trans_discreta(n2, xn2, t0, M, metodo)
-                plt.figure(figsize=(6,8))
-                plt.subplot(3,1,1); plt.stem(nI, x0);   plt.title('Interp. por ceros');  plt.grid()
-                plt.subplot(3,1,2); plt.stem(nI, xesc); plt.title('Interp. por escalón');plt.grid()
-                plt.subplot(3,1,3); plt.stem(nI, xlin); plt.title('Interp. lineal');     plt.grid()
-                plt.suptitle(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
-                plt.tight_layout(); plt.show()
-            else:
-                print("Error.")
-
-        else:
-            print("Opción no válida")
 
 
 # ================================================================
@@ -642,6 +331,324 @@ elif menu == "Punto 4":
 
     else:
         st.info("Por favor sube los dos archivos .txt para continuar.")
+
+elif menu == "Punto 2":
+    st.header("Punto 2: Transformaciones")
+
+    Tipo = st.sidebar.selectbox(
+        "Seleccione el tipo de señal",
+        ["Dominio continuo", "Dominio discreto"]
+    )
+
+    # ----------------------------------------------------------
+    # Señales continuas con transformaciones
+    # ----------------------------------------------------------
+    if Tipo == "Dominio continuo":
+        fs = 100
+        delt = 1/fs
+
+        # Señal continua 1
+        p1, p2, p3, p4, p5 = -2, -1, 1, 3, 4
+        t1a = np.arange(p1, p2, delt)
+        t1b = np.arange(p2, p3, delt)
+        t1c = np.arange(p3, p4, delt)
+        t1d = np.arange(p4, p5+delt, delt)
+        x1a = 2*t1a+4
+        x1b = 2*np.ones(len(t1b))
+        x1c = 3*np.ones(len(t1c))
+        x1d = -3*t1d+12
+        t1 = np.concatenate((t1a, t1b, t1c, t1d))
+        x1 = np.concatenate((x1a, x1b, x1c, x1d))
+
+        # Señal continua 2
+        p1, p2, p3, p4, p5 = -3, -2, 0, 2, 3
+        t2a = np.arange(p1, p2, delt)
+        t2b = np.arange(p2, p3, delt)
+        t2c = np.arange(p3, p4, delt)
+        t2d = np.arange(p4, p5+delt, delt)
+        x2a = t2a+3
+        x2b = (t2b/2)+3
+        x2c = -t2c+3
+        x2d = np.ones(len(t2d))
+        t2 = np.concatenate((t2a, t2b, t2c, t2d))
+        x2 = np.concatenate((x2a, x2b, x2c, x2d))
+
+        # ----------------------------------------------------------
+        # Definición de funciones de transformación
+        # ----------------------------------------------------------
+        def metodo1(t, retraso, escalamiento):
+            # Primero desplazamiento y luego escalamiento
+            t_desplazado = t - retraso
+            t_transformado = t_desplazado / escalamiento
+            return t_desplazado, t_transformado
+
+        def metodo2(t, retraso, escalamiento):
+            # Primero escalamiento y luego desplazamiento
+            t_escalado = t / escalamiento
+            t_transformado = t_escalado - (retraso / escalamiento)
+            return t_escalado, t_transformado
+
+        # ----------------------------------------------------------
+        # Configuración en la barra lateral
+        # ----------------------------------------------------------
+        st.sidebar.header("Configuración - Señales continuas")
+        tipo = st.sidebar.selectbox("Seleccione tipo de señal", ["Señal continua 1", "Señal continua 2"])
+        metodo = st.sidebar.selectbox("Método de transformación", ["Metodo 1", "Metodo 2"])
+        retraso = st.sidebar.number_input("Valor de t0 (desplazamiento)", value=0.0, step=0.5)
+        escala = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
+
+        # Selección de señal base
+        if tipo == "Señal continua 1":
+            t_base, x_base = t1, x1
+        else:
+            t_base, x_base = t2, x2
+
+        # Aplicar método de transformación
+        if metodo == ("Metodo 1"):
+            # Desplazar primero
+            t_desplazada, t_final = metodo1(t_base, retraso, escala)
+            t_intermedia = t_desplazada  # desplazada
+            t_siguiente = t_final        # después escalada
+            titulos = [
+                "1. Señal original",
+                f"2. Señal desplazada (t0={retraso})",
+                f"3. Señal escalada (a={escala})",
+                "4. Señal final"
+            ]
+        else:
+            # Escalar primero
+            t_escalada, t_final = metodo2(t_base, retraso, escala)
+            t_intermedia = t_escalada    # escalada
+            t_siguiente = t_final        # después desplazada
+            titulos = [
+                "1. Señal original",
+                f"2. Señal escalada (a={escala})",
+                f"3. Señal desplazada (t0={retraso})",
+                "4. Señal final"
+            ]
+
+        # ----------------------------------------------------------
+        # Mostrar gráficas en orden
+        # ----------------------------------------------------------
+        fig, axs = plt.subplots(4, 1, figsize=(7, 12))
+
+        axs[0].plot(t_base, x_base, color="blue")
+        axs[0].set_title(titulos[0])
+
+        axs[1].plot(t_intermedia, x_base, color="green")
+        axs[1].set_title(titulos[1])
+
+        axs[2].plot(t_siguiente, x_base, color="orange")
+        axs[2].set_title(titulos[2])
+
+        axs[3].plot(t_final, x_base, color="red")
+        axs[3].set_title(titulos[3])
+
+        for ax in axs: ax.grid(True)
+        plt.tight_layout()
+        st.pyplot(fig)
+
+
+
+    # ----------------------------------------------------------
+# Señales discretas con transformaciones
+# ----------------------------------------------------------
+    elif Tipo == "Dominio discreto":
+    
+        # --- Secuencia discreta 1 ---
+        n_in1, n_fin1 = -5, 16
+        n1 = np.arange(n_in1, n_fin1+1)
+        xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
+
+        # --- Secuencia discreta 2 ---
+        n_in2, n_fin2 = -10, 10
+        n2 = np.arange(n_in2, n_fin2+1)
+        xn2 = np.zeros(len(n2), dtype=float)
+        for i in n2:
+            k = i - n_in2
+            if -10 <= i <= -6:
+                xn2[k] = 0
+            elif -5 <= i <= 0:
+                xn2[k] = (3/4)**i
+            elif 1 <= i <= 5:
+                xn2[k] = (7/4)**i
+            elif 6 <= i <= 10:
+                xn2[k] = 0
+            else:
+                xn2[k] = 0
+# ====== FUNCIÓN ======
+        def trans_discreta(n, x, t0, M, metodo):
+            n_in = n[0]
+            n_fin = n[-1]
+
+            if metodo == 1:
+                # ---- Método 1: desplazamiento → escalamiento ----
+                n_des = n - t0
+
+                if M == 1:
+                    return (n_des, x)
+
+                elif M == -1:
+                    nI = -n_des[::-1]
+                    x_mod = x[::-1]
+                    return (nI, x_mod)
+
+                elif abs(M) > 1:
+                    # Escalamiento (submuestreo)
+                    D = int(abs(M))
+                    x_mod = x[::-D] if M < 0 else x[::D]
+
+                    n_des_escalado = n_des / M
+                    nI = n_des_escalado[::-D] if M < 0 else n_des_escalado[::D]
+
+                    return (nI, x_mod)
+
+                else:  # Interpolación: -1 < M < 1
+                    L = int(round(1.0 / abs(M)))
+                    L_n = len(x)
+                    N = L * (L_n - 1) + 1
+
+                    xn_0 = np.zeros(N, dtype=float)
+                    xn_0[::L] = x
+
+                    xn_esc = xn_0.copy()
+                    for i in range(1, N):
+                        if xn_esc[i] == 0:
+                            xn_esc[i] = xn_esc[i - 1]
+
+                    xn_lin = np.zeros(N, dtype=float)
+                    k = 0
+                    for i in range(L_n - 1):
+                        xi = x[i]
+                        dx = x[i + 1] - xi
+                        xn_lin[k] = xi
+                        for j in range(1, L):
+                            xn_lin[k + j] = xi + (j / L) * dx
+                        k += L
+                    xn_lin[-1] = x[-1]
+
+                    nI = np.linspace(n_des[0] / M, n_des[-1] / M, N)
+
+                    if M < 0:
+                        nI = -nI[::-1]
+                        xn_0 = xn_0[::-1]
+                        xn_esc = xn_esc[::-1]
+                        xn_lin = xn_lin[::-1]
+
+                    return (nI, xn_0, xn_esc, xn_lin)
+
+            elif metodo == 2:
+                # ---- Método 2: escalamiento → desplazamiento ----
+                des_escalado = t0 / M
+
+                if M == 1:
+                    nI = n - int(des_escalado)
+                    return (nI, x)
+
+                elif M == -1:
+                    x_mod = x[::-1]
+                    n_escalado = -n[::-1]
+                    nI = n_escalado + int(des_escalado)
+                    return (nI, x_mod)
+
+                elif abs(M) > 1:
+                    D = int(abs(M))
+                    x_mod = x[::-D] if M < 0 else x[::D]
+
+                    n_escalado = n / M
+                    nI = n_escalado[::-D] if M < 0 else n_escalado[::D]
+                    nI = nI - des_escalado  # Aplicar desplazamiento
+
+                    return (nI, x_mod)
+
+                else:  # Interpolación: -1 < M < 1
+                    L = int(round(1.0 / abs(M)))
+                    L_n = len(x)
+                    N = L * (L_n - 1) + 1
+
+                    xn_0 = np.zeros(N, dtype=float)
+                    xn_0[::L] = x
+
+                    xn_esc = xn_0.copy()
+                    for i in range(1, N):
+                        if xn_esc[i] == 0:
+                            xn_esc[i] = xn_esc[i - 1]
+
+                    xn_lin = np.zeros(N, dtype=float)
+                    k = 0
+                    for i in range(L_n - 1):
+                        xi = x[i]
+                        dx = x[i + 1] - xi
+                        xn_lin[k] = xi
+                        for j in range(1, L):
+                            xn_lin[k + j] = xi + (j / L) * dx
+                        k += L
+                    xn_lin[-1] = x[-1]
+
+                    # Tiempo escalado y desplazado
+                    n_escalado = n / M
+                    nI = np.linspace(n_escalado[0] - des_escalado, n_escalado[-1] - des_escalado, N)
+
+                    if M < 0:
+                        nI = -nI[::-1]
+                        xn_0 = xn_0[::-1]
+                        xn_esc = xn_esc[::-1]
+                        xn_lin = xn_lin[::-1]
+
+                    return (nI, xn_0, xn_esc, xn_lin)
+
+            else:
+                raise ValueError("Método no válido (use 1 o 2).")
+
+        # =========== AQUÍ SÓLO CAMBIAMOS LAS ENTRADAS / SALIDAS ==========
+        st.sidebar.header("Configuración - Señales discretas")
+        op = st.sidebar.selectbox("Seleccione la secuencia discreta a transformar", [1, 2])
+        metodo = st.sidebar.selectbox("Seleccione el método", [1, 2])
+        t0 = st.sidebar.number_input("Ingrese el valor del desplazamiento (entero):", value=0, step=1)
+        M = st.sidebar.number_input("Ingrese escalamiento:", value=1.0, step=0.5)
+
+        if op == 1:
+            if abs(M)>=1:
+                n_out, x_out = trans_discreta(n1, xn1, t0, M, metodo)
+                fig, ax = plt.subplots()
+                ax.stem(n_out, x_out)
+                ax.set_title(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
+                ax.grid()
+                st.pyplot(fig)
+            elif  -1 < M < 1 : # --> INTERPOLACIONES
+                nI, x0, xesc, xlin = trans_discreta(n1, xn1, t0, M, metodo)
+                fig, axs = plt.subplots(3,1,figsize=(6,8))
+                axs[0].stem(nI, x0);   axs[0].set_title('Interp. por ceros');  axs[0].grid()
+                axs[1].stem(nI, xesc); axs[1].set_title('Interp. por escalón');axs[1].grid()
+                axs[2].stem(nI, xlin); axs[2].set_title('Interp. lineal');     axs[2].grid()
+                fig.suptitle(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
+                plt.tight_layout()
+                st.pyplot(fig)
+            else:
+                st.error("Error.")
+
+        elif op == 2:
+            if abs(M)>=1:
+                n_out, x_out = trans_discreta(n2, xn2, t0, M, metodo)
+                fig, ax = plt.subplots()
+                ax.stem(n_out, x_out)
+                ax.set_title(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
+                ax.grid()
+                st.pyplot(fig)
+            elif -1 < M < 1:
+                nI, x0, xesc, xlin = trans_discreta(n2, xn2, t0, M, metodo)
+                fig, axs = plt.subplots(3,1,figsize=(6,8))
+                axs[0].stem(nI, x0);   axs[0].set_title('Interp. por ceros');  axs[0].grid()
+                axs[1].stem(nI, xesc); axs[1].set_title('Interp. por escalón');axs[1].grid()
+                axs[2].stem(nI, xlin); axs[2].set_title('Interp. lineal');     axs[2].grid()
+                fig.suptitle(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
+                plt.tight_layout()
+                st.pyplot(fig)
+            else:
+                st.error("Error.")
+
+        else:
+            st.error("Opción no válida")
 
 
 # ================================================================
