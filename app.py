@@ -510,6 +510,8 @@ elif menu == "Punto 2":
 
                     xn_0 = np.zeros(N, dtype=float)
                     xn_0[::L] = x
+                    if M < 0 :
+                        xn_0[::-L] = x
 
                     xn_esc = xn_0.copy()
                     for i in range(1, N):
@@ -527,7 +529,10 @@ elif menu == "Punto 2":
                         k += L
                     xn_lin[-1] = x[-1]
 
+                    if M < 0 :
+                        xn_lin[::-L] = x
                     nI = np.linspace(n_des[0] / M, n_des[-1] / M, N)
+
 
                     if M < 0:
                         nI = -nI[::-1]
@@ -568,6 +573,8 @@ elif menu == "Punto 2":
 
                     xn_0 = np.zeros(N, dtype=float)
                     xn_0[::L] = x
+                    if M < 0 :
+                        xn_0[::-L] = x
 
                     xn_esc = xn_0.copy()
                     for i in range(1, N):
@@ -584,6 +591,8 @@ elif menu == "Punto 2":
                             xn_lin[k + j] = xi + (j / L) * dx
                         k += L
                     xn_lin[-1] = x[-1]
+                    if M < 0 : 
+                        xn_lin [::-L] = x
 
                     # Tiempo escalado y desplazado
                     n_escalado = n / M
