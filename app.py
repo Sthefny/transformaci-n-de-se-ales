@@ -259,119 +259,144 @@ elif menu == "Punto 2":
             else:
                 xn2[k] = 0
 
- # ------------------------------------------------------
-# Función de transformación discreta
-        # ------------------------------------------------------
-        def transformar_discreta(n, x, t0, M, metodo):
-            if metodo == 1:
-                # Método 1: primero desplazamiento, luego escalamiento
-                n_des = n - t0
-                if M == 1:
-                    return (n_des, x)
-                elif M < -1 or M > 1:
-                    D = int(abs(M))
-                    return (n_des[::D], x[::D])
-                else:  # -1 <= M < 1 → Interpolación
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-                    nI = n_des[0] + np.arange(N) / L
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i-1]
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i+1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-                    return (nI, xn_0, xn_esc, xn_lin)
+            # ------------------------------------------------------
+            # Función de transformación discreta adaptada a Streamlit
+            # ------------------------------------------------------
+            def transformar_discreta(n, x, t0, M, metodo):
+                if metodo == 1:
+                    # ---- Método 1: desplazamiento → escalamiento ----
+                    n_des = n - t0
 
-            elif metodo == 2:
-                # Método 2: primero escalamiento, luego desplazamiento
-                des_escalado = t0 / M
-                if M == 1:
-                    return (n - int(des_escalado), x)   # corregido signo
-                elif M > 1 or M < -1:
-                    D = int(abs(M))
-                    n_diez = n[::D]
-                    x_diez = x[::D]
-                    return (n_diez - int(des_escalado), x_diez)  # corregido signo
-                else:  # -1 <= M < 1 → Interpolación
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-                    nI_base = n[0] + np.arange(N) / L
-                    nI = nI_base - des_escalado   # corregido signo
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i-1]
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i+1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-                    return (nI, xn_0, xn_esc, xn_lin)
+                    if M == 1:
+                        return (n_des, x)
+                    elif M == -1:
+                        # Reflejo puro
+                        n_final = -n_des[::-1]
+                        x_final = x[::-1]
+                        return (n_final, x_final)
+                    elif M < -1 or M > 1:
+                        D = int(abs(M))
+                        n_scaled = n_des[::D]
+                        x_scaled = x[::-D] if M < 0 else x[::D]
+                        return (-n_scaled if M < 0 else n_scaled, x_scaled)
+                    else:  # -1 < M < 1 → Interpolación
+                        L = int(round(1.0 / abs(M)))
+                        L_n = len(x)
+                        N = L * (L_n - 1) + 1
+                        nI = n_des[0] + np.arange(N) / L
+
+                        xn_0 = np.zeros(N, dtype=float)
+                        xn_0[::L] = x
+
+                        xn_esc = xn_0.copy()
+                        for i in range(1, N):
+                            if xn_esc[i] == 0:
+                                xn_esc[i] = xn_esc[i - 1]
+
+                        xn_lin = np.zeros(N, dtype=float)
+                        k = 0
+                        for i in range(L_n - 1):
+                            xi = x[i]
+                            dx = x[i + 1] - xi
+                            xn_lin[k] = xi
+                            for j in range(1, L):
+                                xn_lin[k + j] = xi + (j / L) * dx
+                            k += L
+                        xn_lin[-1] = x[-1]
+
+                        if M < 0:
+                            nI = -nI[::-1]
+                            xn_0 = xn_0[::-1]
+                            xn_esc = xn_esc[::-1]
+                            xn_lin = xn_lin[::-1]
+
+                        return (nI, xn_0, xn_esc, xn_lin)
+
+                elif metodo == 2:
+                    # ---- Método 2: escalamiento → desplazamiento ----
+                    des_escalado = t0 / M
+
+                    if M == 1:
+                        n_scaled = n
+                        x_scaled = x
+                        return (n_scaled - int(des_escalado), x_scaled)
+                    elif M == -1:
+                        n_scaled = -n[::-1]
+                        x_scaled = x[::-1]
+                        return (n_scaled + int(des_escalado), x_scaled)
+                    elif M > 1 or M < -1:
+                        D = int(abs(M))
+                        n_diez = n[::D]
+                        x_diez = x[::-D] if M < 0 else x[::D]
+                        n_final = -n_diez if M < 0 else n_diez
+                        return (n_final + int(des_escalado), x_diez)
+                    else:  # -1 < M < 1 → Interpolación
+                        L = int(round(1.0 / abs(M)))
+                        L_n = len(x)
+                        N = L * (L_n - 1) + 1
+                        nI_base = n[0] + np.arange(N) / L
+                        nI = nI_base + des_escalado
+
+                        xn_0 = np.zeros(N, dtype=float)
+                        xn_0[::L] = x
+
+                        xn_esc = xn_0.copy()
+                        for i in range(1, N):
+                            if xn_esc[i] == 0:
+                                xn_esc[i] = xn_esc[i - 1]
+
+                        xn_lin = np.zeros(N, dtype=float)
+                        k = 0
+                        for i in range(L_n - 1):
+                            xi = x[i]
+                            dx = x[i + 1] - xi
+                            xn_lin[k] = xi
+                            for j in range(1, L):
+                                xn_lin[k + j] = xi + (j / L) * dx
+                            k += L
+                        xn_lin[-1] = x[-1]
+
+                        if M < 0:
+                            nI = -nI[::-1]
+                            xn_0 = xn_0[::-1]
+                            xn_esc = xn_esc[::-1]
+                            xn_lin = xn_lin[::-1]
+
+                        return (nI, xn_0, xn_esc, xn_lin)
+
+                else:
+                    raise ValueError("Método no válido (use 1 o 2).")
+
+            # ------------------------------------------------------
+            # Interfaz gráfica con Streamlit
+            # ------------------------------------------------------
+            op = st.sidebar.selectbox("Seleccione la secuencia discreta", ["secuencia discreta 1", "secuencia discreta 2"])
+            metodo = st.sidebar.selectbox("Seleccione el método", [1, 2], format_func=lambda x: f"Método #{x}")
+            t0 = st.sidebar.number_input("Valor de retraso (t0)", value=0, step=1)
+            M = st.sidebar.number_input("Valor de escalamiento (M)", value=1.0, step=0.5)
+
+            if op == "secuencia discreta 1":
+                n_base, x_base = n1, xn1
             else:
-                raise ValueError("Método no válido (use 1 o 2).")
+                n_base, x_base = n2, xn2
 
-        # ------------------------------------------------------
-        # Interfaz gráfica con Streamlit
-        # ------------------------------------------------------
-        op = st.sidebar.selectbox("Seleccione la secuencia discreta", ["secuencia discreta 1", "secuencia discreta 2"])
-        metodo = st.sidebar.selectbox("Seleccione el método", [1, 2], format_func=lambda x: f"Método #{x}")
-        t0 = st.sidebar.number_input("Valor de retraso (t0)", value=0, step=1)
-        M = st.sidebar.number_input("Valor de escalamiento (M)", value=1.0, step=0.5)
+            # Procesar según el rango de M
+            if M <= -1 or M >= 1:
+                n_out, x_out = transformar_discreta(n_base, x_base, t0, M, metodo)
+                fig, ax = plt.subplots(figsize=(7,4))
+                ax.stem(n_out, x_out)
+                ax.set_title(f'Secuencia {op[-1]} (método {metodo}) — t0={t0}, M={M}')
+                ax.grid(True)
+                st.pyplot(fig)
 
-        if op == "secuencia discreta 1":
-            n_base, x_base = n1, xn1
-        else:
-            n_base, x_base = n2, xn2
-
-        # Procesar según el rango de M
-        if M < -1 or M >= 1:
-            n_out, x_out = transformar_discreta(n_base, x_base, t0, M, metodo)
-            fig, ax = plt.subplots(figsize=(7,4))
-            ax.stem(n_out, x_out)
-            ax.set_title(f'Secuencia {op[-1]} (método {metodo}) — t0={t0}, M={M}')
-            ax.grid(True)
-            st.pyplot(fig)
-
-        elif -1 <= M < 1:
-            nI, x0, xesc, xlin = transformar_discreta(n_base, x_base, t0, M, metodo)
-            fig, axs = plt.subplots(3, 1, figsize=(7, 10))
-            axs[0].stem(nI, x0); axs[0].set_title('Interpolación por ceros'); axs[0].grid(True)
-            axs[1].stem(nI, xesc); axs[1].set_title('Interpolación por escalón'); axs[1].grid(True)
-            axs[2].stem(nI, xlin); axs[2].set_title('Interpolación lineal'); axs[2].grid(True)
-            plt.tight_layout()
-            st.pyplot(fig)
-
-
+            elif -1 < M < 1:
+                nI, x0, xesc, xlin = transformar_discreta(n_base, x_base, t0, M, metodo)
+                fig, axs = plt.subplots(3, 1, figsize=(7, 10))
+                axs[0].stem(nI, x0); axs[0].set_title('Interpolación por ceros'); axs[0].grid(True)
+                axs[1].stem(nI, xesc); axs[1].set_title('Interpolación por escalón'); axs[1].grid(True)
+                axs[2].stem(nI, xlin); axs[2].set_title('Interpolación lineal'); axs[2].grid(True)
+                plt.tight_layout()
+                st.pyplot(fig)
 
 # ================================================================
 # PUNTO 3: Retardo, escalamiento y suma de señales
