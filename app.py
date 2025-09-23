@@ -236,7 +236,31 @@ elif menu == "Punto 2":
 # ----------------------------------------------------------
     elif Tipo == "Dominio discreto":
 
+        n_in1, n_fin1 = -5, 16
+        n1 = np.arange(n_in1, n_fin1+1)
+        xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
+
+        # --- Secuencia discreta 2 ---
+        n_in2, n_fin2 = -10, 10
+        n2 = np.arange(n_in2, n_fin2+1)
+        xn2 = np.zeros(len(n2), dtype=float)
+        for i in n2:
+            k = i - n_in2
+            if -10 <= i <= -6:
+                xn2[k] = 0
+            elif -5 <= i <= 0:
+                xn2[k] = (3/4)**i
+            elif 1 <= i <= 5:
+                xn2[k] = (7/4)**i
+            elif 6 <= i <= 10:
+                xn2[k] = 0
+            else:
+                xn2[k] = 0
+
         def trans_discreta(n, x, t0, M, metodo):
+            n_in = n[0]
+            n_fin = n[-1]
+
             if metodo == 1:
                 # ---- Método 1: desplazamiento → escalamiento ----
                 n_des = n - t0
@@ -356,59 +380,51 @@ elif menu == "Punto 2":
             else:
                 raise ValueError("Método no válido (use 1 o 2).")
 
-        # --------------------------
-        # Interfaz Streamlit
-        # --------------------------
-        op = st.sidebar.selectbox("Seleccione la secuencia discreta", ["secuencia discreta 1", "secuencia discreta 2"])
-        metodo = st.sidebar.selectbox("Seleccione el método", [1, 2], format_func=lambda x: f"Método #{x}")
-        t0 = st.sidebar.number_input("Valor de retraso (t0)", value=0, step=1)
-        M = st.sidebar.number_input("Valor de escalamiento (M)", value=1.0, step=0.5)
-            # --- Secuencia discreta 1 ---
-    n_in1, n_fin1 = -5, 16
-    n1 = np.arange(n_in1, n_fin1+1)
-    xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
+        # --- Aquí el bloque de ejecución ---
+        print("Seleccione la secuencia discreta a transformar (1 o 2): ")
+        op = int(input())
 
-    # --- Secuencia discreta 2 ---
-    n_in2, n_fin2 = -10, 10
-    n2 = np.arange(n_in2, n_fin2+1)
-    xn2 = np.zeros(len(n2), dtype=float)
-    for i in n2:
-        k = i - n_in2
-        if -10 <= i <= -6:
-            xn2[k] = 0
-        elif -5 <= i <= 0:
-            xn2[k] = (3/4)**i
-        elif 1 <= i <= 5:
-            xn2[k] = (7/4)**i
-        elif 6 <= i <= 10:
-            xn2[k] = 0
-        else:
-            xn2[k] = 0
-            
-        if op == "secuencia discreta 1":
-            
-            n_base, x_base = n1, xn1
-        else:
-            n_base, x_base = n2, xn2
+        metodo = int(input("Seleccione el método (1: desplazar→escalar, 2: escalar→desplazar con t0/M): "))
+        t0 = int(input("Ingrese el valor del desplazamiento (entero): "))
+        M = float(input("Ingrese escalamiento: "))
 
-        if abs(M) >= 1:
-            n_out, x_out = trans_discreta(n_base, x_base, t0, M, metodo)
-            fig, ax = plt.subplots(figsize=(7, 4))
-            ax.stem(n_out, x_out)
-            ax.set_title(f'{op} (método {metodo}) — t0={t0}, M={M}')
-            ax.grid(True)
-            st.pyplot(fig)
+        if op == 1:
+            if abs(M)>=1:
+                n_out, x_out = trans_discreta(n1, xn1, t0, M, metodo)
+                plt.stem(n_out, x_out)
+                plt.title(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
+                plt.grid(); plt.show()
+            elif  -1 < M < 1 : # --> INTERPOLACIONES
+                nI, x0, xesc, xlin = trans_discreta(n1, xn1, t0, M, metodo)
+                plt.figure(figsize=(6,8))
+                plt.subplot(3,1,1); plt.stem(nI, x0);   plt.title('Interp. por ceros');  plt.grid()
+                plt.subplot(3,1,2); plt.stem(nI, xesc); plt.title('Interp. por escalón');plt.grid()
+                plt.subplot(3,1,3); plt.stem(nI, xlin); plt.title('Interp. lineal');     plt.grid()
+                plt.suptitle(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
+                plt.tight_layout(); plt.show()
+            else:
+                print("Error.")
 
-        elif -1 < M < 1:
-            nI, x0, xesc, xlin = trans_discreta(n_base, x_base, t0, M, metodo)
-            fig, axs = plt.subplots(3, 1, figsize=(7, 10))
-            axs[0].stem(nI, x0); axs[0].set_title('Interp. por ceros'); axs[0].grid(True)
-            axs[1].stem(nI, xesc); axs[1].set_title('Interp. por escalón'); axs[1].grid(True)
-            axs[2].stem(nI, xlin); axs[2].set_title('Interp. lineal'); axs[2].grid(True)
-            plt.tight_layout()
-            st.pyplot(fig)
+        elif op == 2:
+            if abs(M)>=1:
+                n_out, x_out = trans_discreta(n2, xn2, t0, M, metodo)
+                plt.stem(n_out, x_out)
+                plt.title(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
+                plt.grid(); plt.show()
+            elif -1 < M < 1:
+                nI, x0, xesc, xlin = trans_discreta(n2, xn2, t0, M, metodo)
+                plt.figure(figsize=(6,8))
+                plt.subplot(3,1,1); plt.stem(nI, x0);   plt.title('Interp. por ceros');  plt.grid()
+                plt.subplot(3,1,2); plt.stem(nI, xesc); plt.title('Interp. por escalón');plt.grid()
+                plt.subplot(3,1,3); plt.stem(nI, xlin); plt.title('Interp. lineal');     plt.grid()
+                plt.suptitle(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
+                plt.tight_layout(); plt.show()
+            else:
+                print("Error.")
+
         else:
-            st.warning("Error: parámetro M inválido.")
+            print("Opción no válida")
+
 
 # ================================================================
 # PUNTO 3: Retardo, escalamiento y suma de señales
