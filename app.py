@@ -154,36 +154,82 @@ elif menu == "Punto 2":
         t2 = np.concatenate((t2a, t2b, t2c, t2d))
         x2 = np.concatenate((x2a, x2b, x2c, x2d))
 
+        # ----------------------------------------------------------
+        # Definición de funciones de transformación
+        # ----------------------------------------------------------
+        def metodo1(t, retraso, escalamiento):
+            # Primero desplazamiento y luego escalamiento
+            t_desplazado = t - retraso
+            t_transformado = t_desplazado / escalamiento
+            return t_desplazado, t_transformado
+
+        def metodo2(t, retraso, escalamiento):
+            # Primero escalamiento y luego desplazamiento
+            t_escalado = t / escalamiento
+            t_transformado = t_escalado - (retraso / escalamiento)
+            return t_escalado, t_transformado
+
+        # ----------------------------------------------------------
+        # Configuración en la barra lateral
+        # ----------------------------------------------------------
         st.sidebar.header("Configuración - Señales continuas")
         tipo = st.sidebar.selectbox("Seleccione tipo de señal", ["Señal continua 1", "Señal continua 2"])
+        metodo = st.sidebar.selectbox("Método de transformación", ["Metodo 1", "Metodo 2"])
         retraso = st.sidebar.number_input("Valor de t0 (desplazamiento)", value=0.0, step=0.5)
         escala = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
 
+        # Selección de señal base
         if tipo == "Señal continua 1":
             t_base, x_base = t1, x1
         else:
             t_base, x_base = t2, x2
 
-        # Transformaciones
-        t_original = t_base
-        x_original = x_base
-        t_desplazada = t_base + retraso
-        t_escalada = t_desplazada / escala
-        t_final = t_escalada
+        # Aplicar método de transformación
+        if metodo == ("Metodo 1"):
+            # Desplazar primero
+            t_desplazada, t_final = metodo1(t_base, retraso, escala)
+            t_intermedia = t_desplazada  # desplazada
+            t_siguiente = t_final        # después escalada
+            titulos = [
+                "1. Señal original",
+                f"2. Señal desplazada (t0={retraso})",
+                f"3. Señal escalada (a={escala})",
+                "4. Señal final"
+            ]
+        else:
+            # Escalar primero
+            t_escalada, t_final = metodo2(t_base, retraso, escala)
+            t_intermedia = t_escalada    # escalada
+            t_siguiente = t_final        # después desplazada
+            titulos = [
+                "1. Señal original",
+                f"2. Señal escalada (a={escala})",
+                f"3. Señal desplazada (t0={retraso})",
+                "4. Señal final"
+            ]
 
-        # Mostrar gráficas
+        # ----------------------------------------------------------
+        # Mostrar gráficas en orden
+        # ----------------------------------------------------------
         fig, axs = plt.subplots(4, 1, figsize=(7, 12))
-        axs[0].plot(t_original, x_original, color="blue")
-        axs[0].set_title("1. Señal original")
-        axs[1].plot(t_desplazada, x_original, color="green")
-        axs[1].set_title(f"2. Señal desplazada (t0={retraso})")
-        axs[2].plot(t_escalada, x_original, color="orange")
-        axs[2].set_title(f"3. Señal escalada (a={escala})")
-        axs[3].plot(t_final, x_original, color="red")
-        axs[3].set_title("4. Señal final")
+
+        axs[0].plot(t_base, x_base, color="blue")
+        axs[0].set_title(titulos[0])
+
+        axs[1].plot(t_intermedia, x_base, color="green")
+        axs[1].set_title(titulos[1])
+
+        axs[2].plot(t_siguiente, x_base, color="orange")
+        axs[2].set_title(titulos[2])
+
+        axs[3].plot(t_final, x_base, color="red")
+        axs[3].set_title(titulos[3])
+
         for ax in axs: ax.grid(True)
         plt.tight_layout()
         st.pyplot(fig)
+
+
 
     # ----------------------------------------------------------
 # Señales discretas con transformaciones
