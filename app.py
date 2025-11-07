@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 st.set_page_config(
     page_title="Laboratorio de Señales",
@@ -10,25 +11,22 @@ st.set_page_config(
 )
 
 # -------------------
-# Menú lateral con título fijo
+# Menú lateral
 # -------------------
 st.sidebar.title("📘 Laboratorio Nº 1")
 
 menu = st.sidebar.selectbox(
     "Selecciona el punto",
-    ["Inicio", "Punto 1", "Punto 2", "Punto 3", "Punto 4"]
+    ["Inicio", "Punto 1", "Punto 2"]
 )
 
 # ================================================================
-# PUNTO 1: SEÑALES ORIGINALES
+# INICIO
 # ================================================================
 if menu == "Inicio":
-    st.markdown(
-        "<h1 style='text-align: center;'>Transformación de señales, Señales y Sistemas</h1>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<h1 style='text-align: center;'>Transformación de señales, Señales y Sistemas</h1>", unsafe_allow_html=True)
     st.write("Bienvenida/o 🙌. Usa el menú de la izquierda para navegar entre los puntos del laboratorio.")
-    
+
     st.subheader("Descripción general")
     st.write(
         "El laboratorio tiene como fin poner en práctica los conceptos teóricos adquiridos en el curso de Señales "
@@ -37,632 +35,451 @@ if menu == "Inicio":
         "y el escalamiento en el tiempo, junto con su equivalente en lo denominado diezmado e interpolación."
     )
 
+
+# ================================================================
+# PUNTO 1: SEÑALES ORIGINALES Y CONVOLUCIÓN
+# ================================================================
 elif menu == "Punto 1":
-    st.header("Punto 1: Señales originales")
-    
-    Señal = st.sidebar.selectbox(
-        "Seleccione qué señal quiere visualizar",
-        ["Señal continua 1", "Señal continua 2", "Secuencia discreta 1", "Secuencia discreta 2"]
-    ) 
+    st.markdown("<h2 style='text-align: center;'>Punto 1</h2>", unsafe_allow_html=True)
 
-    fs = 100
-    delt = 1/fs
-
-    # --- Señal continua 1 ---
-    p1, p2, p3, p4, p5 = -2, -1, 1, 3, 4
-    t1a = np.arange(p1,p2,delt)
-    t1b = np.arange(p2,p3,delt)
-    t1c = np.arange(p3,p4,delt)
-    t1d = np.arange(p4,p5+delt,delt)
-    x1a = 2*t1a+4
-    x1b = 2*np.ones(len(t1b))
-    x1c = 3*np.ones(len(t1c))
-    x1d = -3*t1d+12
-    t1 = np.concatenate((t1a,t1b,t1c,t1d))
-    x1 = np.concatenate((x1a,x1b,x1c,x1d))
-
-    # --- Señal continua 2 ---
-    p11, p22, p33, p44, p55 = -3, -2, 0, 2, 3
-    t2a = np.arange(p11,p22,delt)
-    t2b = np.arange(p22,p33,delt)
-    t2c = np.arange(p33,p44,delt)
-    t2d = np.arange(p44,p55+delt,delt)
-    x2a = t2a+3
-    x2b = (t2b/2)+3
-    x2c = -t2c+3
-    x2d = np.ones(len(t2d))
-    t2 = np.concatenate((t2a,t2b,t2c,t2d))
-    x2 = np.concatenate((x2a,x2b,x2c,x2d))
-
-    # --- Secuencia discreta 1 ---
-    n_in1, n_fin1 = -5, 16
-    n1 = np.arange(n_in1, n_fin1+1)
-    xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
-
-    # --- Secuencia discreta 2 ---
-    n_in2, n_fin2 = -10, 10
-    n2 = np.arange(n_in2, n_fin2+1)
-    xn2 = np.zeros(len(n2), dtype=float)
-    for i in n2:
-        k = i - n_in2
-        if -10 <= i <= -6:
-            xn2[k] = 0
-        elif -5 <= i <= 0:
-            xn2[k] = (3/4)**i
-        elif 1 <= i <= 5:
-            xn2[k] = (7/4)**i
-        elif 6 <= i <= 10:
-            xn2[k] = 0
-        else:
-            xn2[k] = 0
-
-    # --- Mostrar la señal seleccionada ---
-    fig, ax = plt.subplots(figsize=(6,4))
-    if Señal == "Señal continua 1":
-        ax.plot(t1, x1, color="blue")
-        ax.set_title("Señal continua 1")
-    elif Señal == "Señal continua 2":
-        ax.plot(t2, x2, color="green")
-        ax.set_title("Señal continua 2")
-    elif Señal == "Secuencia discreta 1":
-        ax.stem(n1, xn1, linefmt="b-", markerfmt="bo", basefmt="r-")
-        ax.set_title("Secuencia discreta 1")
-    elif Señal == "Secuencia discreta 2":
-        ax.stem(n2, xn2, linefmt="g-", markerfmt="go", basefmt="r-")
-        ax.set_title("Secuencia discreta 2")
-    ax.grid(True)
-    st.pyplot(fig)
-    st.markdown("---")
-
-
-# ================================================================
-# PUNTO 3: Retardo, escalamiento y suma de señales
-# ================================================================
-elif menu == "Punto 3":
-    st.header("Punto 3: Retardo, escalamiento y suma de señales")
-
-    # Selector para elegir cuál señal usar
-    caso = st.sidebar.selectbox(
-        "Seleccione el caso de suma",
-        ["Señal continua con x1(t)", "Señal continua con x2(t)"]
+    tipo_senal = st.sidebar.selectbox(
+        "Selecciona el tipo de señal",
+        ("Señales continuas", "Señales discretas"),
     )
 
-    fs = 100
-    delt = 1/fs
+    # ============================================================
+    # SEÑALES CONTINUAS
+    if tipo_senal == "Señales continuas":
 
-    # =====================================================
-    # CASO A: Transformaciones y suma con señal x1(t)
-    # =====================================================
-    if caso == "Señal continua con x1(t)":
-        # Señal continua original (x1)
-        p1, p2, p3, p4, p5 = -2, -1, 1, 3, 4
-        t1a = np.arange(p1, p2, delt)
-        t1b = np.arange(p2, p3, delt)
-        t1c = np.arange(p3, p4, delt)
-        t1d = np.arange(p4, p5+delt, delt)
-        x1a = 2*t1a+4
-        x1b = 2*np.ones(len(t1b))
-        x1c = 3*np.ones(len(t1c))
-        x1d = -3*t1d+12
-        t1 = np.concatenate((t1a, t1b, t1c, t1d))
-        x1 = np.concatenate((x1a, x1b, x1c, x1d))
 
-        # Gráfica original
-        fig0, ax0 = plt.subplots(figsize=(6,4))
-        ax0.plot(t1, x1, color="black")
-        ax0.set_title("Señal original x1(t)")
-        ax0.grid(True)
-        st.pyplot(fig0)
+        st.title("🔁 Convolución Continua — Visualización Interactiva")
 
-        # Retardo
-        t0, t0a = -2, -1
-        # Crear ejes retardados
-        p11, p21, p31, p41, p51 = -2+t0, -1+t0, 1+t0, 3+t0, 4+t0
-        t11 = np.arange(p11, p21, delt)
-        t12 = np.arange(p21, p31, delt)
-        t13 = np.arange(p31, p41, delt)
-        t14 = np.arange(p41, p51+delt, delt)
-        tr1 = np.concatenate((t11, t12, t13, t14))
+        # ---------- Parámetros ----------
+        delta = 0.05
+        FRAME_DELAY = 1e-25
 
-        p12, p22, p32, p42, p52 = -2+t0a, -1+t0a, 1+t0a, 3+t0a, 4+t0a
-        t21 = np.arange(p12, p22, delt)
-        t22 = np.arange(p22, p32, delt)
-        t23 = np.arange(p32, p42, delt)
-        t24 = np.arange(p42, p52+delt, delt)
-        tr2 = np.concatenate((t21, t22, t23, t24))
+        # ---------- Definición de señales ----------
+        def crear_senales():
+            t_a = np.arange(-1, 5 + delta, delta)
+            x_a = np.piecewise(t_a, [t_a < 0, (t_a >= 0) & (t_a < 3), (t_a >= 3) & (t_a < 5), t_a >= 5],
+                            [0, 2, -2, 0])
 
-        # Escalamiento
-        esc1, esc2 = 3, -4
-        tesc1 = tr1 * esc1
-        tesc2 = tr2 * esc2
+            t_b = np.arange(-2, 2 + delta, delta)
+            x_b = np.piecewise(t_b, [t_b < -1, (t_b >= -1) & (t_b <= 1), t_b > 1],
+                            [0, lambda t: -t, 0])
 
-        # Gráfica escalada 1
-        fig1, ax1 = plt.subplots(figsize=(6,4))
-        ax1.plot(tesc1, x1, color="blue")
-        ax1.set_title("x1(t/3 + 2)")
-        ax1.grid(True)
-        st.pyplot(fig1)
+            t_c = np.arange(-2, 5 + delta, delta)
+            x_c = np.piecewise(
+                t_c,
+                [t_c < -1, (t_c >= -1) & (t_c < 1), (t_c >= 1) & (t_c < 3), (t_c >= 3) & (t_c < 5), t_c >= 5],
+                [0, 2, lambda t: -2*(t-1)+2, -2, 0]
+            )
 
-        # Gráfica escalada 2
-        fig2, ax2 = plt.subplots(figsize=(6,4))
-        ax2.plot(tesc2, x1, color="green")
-        ax2.set_title("x1(1 - t/4)")
-        ax2.grid(True)
-        st.pyplot(fig2)
+            t_d = np.arange(-3, 3 + delta, delta)
+            x_d = np.piecewise(t_d, [t_d < -3, (t_d >= -3) & (t_d <= 3), t_d > 3],
+                            [0, lambda t: np.exp(-np.abs(t)), 0])
 
-        # Suma
-        t_min, t_max = min(tesc1.min(), tesc2.min()), max(tesc1.max(), tesc2.max())
-        t_sum = np.arange(t_min, t_max+delt, delt)
-        s1 = t_sum/esc1 - t0
-        s2 = t_sum/esc2 - t0a
-        x11_interp = np.interp(s1, t1, x1)
-        x21_interp = np.interp(s2, t1, x1)
-        x_sum = x11_interp + x21_interp
+            return {"a": (t_a, x_a), "b": (t_b, x_b), "c": (t_c, x_c), "d": (t_d, x_d)}
 
-        fig3, ax3 = plt.subplots(figsize=(12,8))
-        ax3.plot(t_sum, x_sum, color="red")
-        ax3.set_title("Suma: x1(t/3 + 2) + x1(1 - t/4)")
-        ax3.grid(True)
-        st.pyplot(fig3)
+        senales = crear_senales()
 
-    # =====================================================
-    # CASO B: Transformaciones y suma con señal x2(t)
-    # =====================================================
-    elif caso == "Señal continua con x2(t)":
-        delt = 0.01  # paso base
+        # ---------- Estado ----------
+        if "cont_anim_running" not in st.session_state:
+            st.session_state.cont_anim_running = False
+        if "cont_anim_stop" not in st.session_state:
+            st.session_state.cont_anim_stop = False
 
-        # --- Señal continua 2 (original) ---
-        p11, p22, p33, p44, p55 = -3, -2, 0, 2, 3
-        t2a = np.arange(p11, p22, delt)
-        t2b = np.arange(p22, p33, delt)
-        t2c = np.arange(p33, p44, delt)
-        t2d = np.arange(p44, p55 + delt, delt)
+        # ---------- Interfaz de selección ----------
+        with st.expander("🧩 Selección de señales"):
+            col1, col2 = st.columns(2)
+            with col1:
+                s1 = st.selectbox("Selecciona la primera señal x(t):", list(senales.keys()), index=0)
+            with col2:
+                s2 = st.selectbox("Selecciona la segunda señal h(t):", list(senales.keys()), index=1)
 
-        x2a = t2a + 3
-        x2b = (t2b / 2) + 3
-        x2c = -t2c + 3
-        x2d = np.ones(len(t2d))
+        start, stop = st.columns([1, 1])
+        start_btn = start.button("▶ Iniciar animación continua")
+        stop_btn = stop.button("⏹ Detener animación")
 
-        t2 = np.concatenate((t2a, t2b, t2c, t2d))
-        x2 = np.concatenate((x2a, x2b, x2c, x2d))
+        visor = st.empty()
 
-        # Definimos x(t) como función
-        def x_func(t):
-            return np.interp(t, t2, x2, left=0, right=0)
+        if stop_btn:
+            st.session_state.cont_anim_stop = True
 
-        # Rango amplio de tiempo
-        t = np.arange(-20, 20, delt/5)
+        # ---------- Obtener señales ----------
+        t_x, x_t = senales[s1]
+        t_h, h_t = senales[s2]
 
-        # Transformaciones
-        x1 = x_func(t/3 + 2)       # x(t/3 + 2)
-        x2_tr = x_func(1 - t/4)    # x(1 - t/4)
-        x_sum = x1 + x2_tr
+        # ---------- Cálculo de convolución ----------
+        y_conv = np.convolve(x_t, h_t, mode='full') * delta
+        t_conv = np.linspace(t_x[0] + t_h[0], t_x[-1] + t_h[-1], len(y_conv))
 
-        # Gráficas
-        fig1, ax1 = plt.subplots(figsize=(8,4))
-        ax1.plot(t2, x2, 'b', linewidth=2, label='$x(t)$')
-        ax1.set_title("Señal original $x(t)$")
-        ax1.grid(True); ax1.legend()
-        st.pyplot(fig1)
+        # ---------- Vista previa ----------
+        with st.container():
+            fig_prev, axs_prev = plt.subplots(2, 1, figsize=(10, 5))
+            fig_prev.suptitle("Vista previa de las señales seleccionadas", fontsize=14, fontweight="bold")
+            axs_prev[0].plot(t_x, x_t, linewidth=2, label="x(t)")
+            axs_prev[0].legend(); axs_prev[0].grid(alpha=0.4)
+            axs_prev[1].plot(t_h, h_t, linewidth=2, color="C1", label="h(t)")
+            axs_prev[1].legend(); axs_prev[1].grid(alpha=0.4)
+            fig_prev.tight_layout(rect=[0, 0.03, 1, 0.95])
+            visor.pyplot(fig_prev, clear_figure=True)
+            plt.close(fig_prev)
 
-        fig2, ax2 = plt.subplots(figsize=(8,4))
-        ax2.plot(t, x1, 'r', linewidth=2, label=r'$x\left(\frac{t}{3} + 2\right)$')
-        ax2.set_title("Transformación 1")
-        ax2.grid(True); ax2.legend()
-        st.pyplot(fig2)
+        # ---------- Función de animación ----------
+        def animar_convolucion():
+            st.session_state.cont_anim_stop = False
+            st.session_state.cont_anim_running = True
 
-        fig3, ax3 = plt.subplots(figsize=(8,4))
-        ax3.plot(t, x2_tr, 'g', linewidth=2, label=r'$x\left(1 - \frac{t}{4}\right)$')
-        ax3.set_title("Transformación 2")
-        ax3.grid(True); ax3.legend()
-        st.pyplot(fig3)
+            for k, t_k in enumerate(t_conv):
+                if st.session_state.cont_anim_stop:
+                    st.session_state.cont_anim_running = False
+                    return
 
-        fig4, ax4 = plt.subplots(figsize=(10,5))
-        ax4.plot(t, x_sum, 'm', linewidth=2, label="Suma final")
-        ax4.set_title("Suma de las transformaciones")
-        ax4.grid(True); ax4.legend()
-        st.pyplot(fig4)
+                h_shifted = np.interp(t_x, t_h + t_k, h_t, left=0, right=0)
+                product = x_t * h_shifted
+
+                fig, axs = plt.subplots(3, 1, figsize=(10, 7))
+                fig.suptitle(f"t = {t_k:.2f} — Paso {k+1}/{len(t_conv)}", fontsize=14, fontweight="bold")
+
+                axs[0].plot(t_x, x_t, label="x(t)", linewidth=2)
+                axs[0].plot(t_x, h_shifted, label="h(t) desplazada", color="C1", linewidth=2)
+                axs[0].legend(); axs[0].grid(alpha=0.4)
+
+                axs[1].plot(t_x, product, color="C2")
+                axs[1].set_title("Producto x(t)·h(t desplazada)")
+                axs[1].grid(alpha=0.4)
+
+                axs[2].plot(t_conv[:k+1], y_conv[:k+1], color="purple")
+                axs[2].set_title("y(t) — construcción progresiva")
+                axs[2].grid(alpha=0.4)
+
+                fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+                visor.pyplot(fig, clear_figure=True)
+                plt.close(fig)
+                time.sleep(FRAME_DELAY)
+
+            # Resultado final
+            fig_final, ax_final = plt.subplots(1, 1, figsize=(10, 3))
+            ax_final.plot(t_conv, y_conv, color="purple", linewidth=2)
+            ax_final.set_title("y(t) — Convolución completa")
+            ax_final.grid(alpha=0.4)
+            fig_final.tight_layout()
+            visor.pyplot(fig_final, clear_figure=True)
+            plt.close(fig_final)
+
+            st.session_state.cont_anim_running = False
+
+        if start_btn and not st.session_state.cont_anim_running:
+            animar_convolucion()
+
+
+
+    # ============================================================
+    # SEÑALES DISCRETAS (caso B corregido)
+    # ============================================================
+    elif tipo_senal == "Señales discretas":
+        modo_disc = st.sidebar.selectbox(
+            "Selecciona lo que deseas visualizar",
+            ("Funciones individuales", "Convoluciones (animadas)")
+        )
+
+        # ===============================
+        # INCISO A
+        # ===============================
+        na = np.arange(-6, 6, 1)
+        nha = np.arange(-5, 5, 1)
+        xna = 6 - np.abs(na)
+        hna = np.ones(len(nha))
+
+        # ===============================
+        # INCISO B
+        # ===============================
+        nxb = np.arange(-3, 8, 1)
+        nhb = np.arange(0, 10, 1)
+
+        xnb = np.ones(len(nxb))
+        hnb = (6/7)**nhb
+        # ===============================
+        # FUNCIONES INDIVIDUALES
+        # ===============================
+        if modo_disc == "Funciones individuales":
+            inciso = st.selectbox("Selecciona el inciso", ("A", "B"))
+            opcion = st.selectbox("Selecciona la señal", ("x[n]", "h[n]"))
+            fig, ax = plt.subplots(figsize=(8, 4))
+
+            if inciso == "A":
+                if opcion == "x[n]":
+                    ax.stem(na, xna, basefmt=" ")
+                    ax.set_title("Inciso A — x[n] = 6 - |n|")
+                else:
+                    ax.stem(nha, hna, basefmt=" ")
+                    ax.set_title("Inciso A — h[n] = 1")
+            else:
+                if opcion == "x[n]":
+                    ax.stem(nxb, xnb, basefmt=" ")
+                    ax.set_title("Inciso B — x[n] = u[n+3] - u[n-7]")
+                else:
+                    ax.stem(nhb, hnb, basefmt=" ")
+                    ax.set_title("Inciso B — h[n] = (6/7)^n · (u[n] - u[n−9])")
+
+            ax.set_xlabel("n")
+            ax.set_ylabel("Amplitud")
+            ax.grid(True)
+            st.pyplot(fig)
+
+        # ===============================
+        # ANIMACIONES DE CONVOLUCIÓN
+        # ===============================
+        elif modo_disc == "Convoluciones (animadas)":
+            inciso = st.selectbox("Selecciona el inciso", ("A", "B"))
+
+            if inciso == "A":
+                st.subheader("🔄 Animación de convolución discreta — Inciso A")
+
+                ya_py = np.convolve(hna, xna)
+                na_con = np.arange(na[0] + nha[0], na[-1] + nha[-1] + 1)
+
+                fig, axs = plt.subplots(4, 1, figsize=(8, 10))
+                placeholder = st.empty()
+                y = []
+
+                h_flip = hna[::-1]
+                n_flip = -nha[::-1]
+
+                for n0 in na_con:
+                    h_shift = np.zeros_like(na, dtype=float)
+                    for i, ni in enumerate(n_flip):
+                        n_pos = n0 - ni
+                        if n_pos in na:
+                            idx = np.where(na == n_pos)[0][0]
+                            h_shift[idx] = h_flip[i]
+
+                    producto = xna * h_shift
+                    y_val = np.sum(producto)
+                    y.append(y_val)
+
+                    axs[0].cla(); axs[1].cla(); axs[2].cla(); axs[3].cla()
+                    axs[0].stem(na, xna, basefmt=" ")
+                    axs[1].stem(na, h_shift, basefmt=" ", linefmt="r-", markerfmt="ro")
+                    axs[2].stem(na, producto, basefmt=" ", linefmt="orange", markerfmt="o")
+                    axs[3].stem(na_con[:len(y)], y, basefmt=" ", linefmt="purple", markerfmt="o")
+
+                    axs[0].set_title("x[n]")
+                    axs[1].set_title(f"h[n−{n0}] desplazada e invertida")
+                    axs[2].set_title("Producto x[n]·h[n−k]")
+                    axs[3].set_title("Construcción progresiva de y[n]")
+
+                    for ax in axs:
+                        ax.set_xlabel("n")
+                        ax.set_ylabel("Amplitud")
+                        ax.grid(True)
+
+                    plt.tight_layout()
+                    placeholder.pyplot(fig)
+                    time.sleep(0.1)
+
+                fig_final, axf = plt.subplots(figsize=(8, 4))
+                axf.stem(na_con, ya_py, basefmt=" ")
+                axf.set_title("Convolución discreta final y[n] — Inciso A")
+                axf.set_xlabel("n")
+                axf.set_ylabel("y[n]")
+                axf.grid(True)
+                st.pyplot(fig_final)
+
+                st.success("✅ Animación discreta (Inciso A) completada correctamente.")
+
+            # ===============================
+            # INCISO B — ANIMACIÓN
+            # ===============================
+            else:
+                st.subheader("🔄 Animación de convolución discreta — Inciso B")
+
+                # Definición de señales
+                nxb = np.arange(-3, 8, 1)
+                nhb = np.arange(0, 10, 1)
+                xnb = np.ones(len(nxb))
+                hnb = (6/7)**nhb
+
+                # Convolución con numpy
+                yb_py = np.convolve(xnb, hnb)
+                nb_con = np.arange(nxb[0] + nhb[0], nxb[-1] + nhb[-1] + 1)  # (-3 a 16)
+
+                # Crear figuras
+                fig, axs = plt.subplots(4, 1, figsize=(8, 10))
+                placeholder = st.empty()
+                y = []
+
+                # Inversión e índices
+                h_flip = hnb[::-1]
+                n_flip = -nhb[::-1]
+
+                for n0 in nb_con:
+                    # Extender rango para evitar recortes
+                    n_ext = np.arange(nxb[0] - len(h_flip), nxb[-1] + len(h_flip))
+                    h_shift = np.zeros_like(n_ext, dtype=float)
+                    x_ext = np.zeros_like(n_ext, dtype=float)
+
+                    # Ubicar x[n] dentro del rango extendido
+                    x_ext[(n_ext >= nxb[0]) & (n_ext <= nxb[-1])] = xnb
+
+                    # Desplazar h[n] invertida
+                    for i, ni in enumerate(n_flip):
+                        n_pos = n0 - ni
+                        if n_pos in n_ext:
+                            idx = np.where(n_ext == n_pos)[0][0]
+                            h_shift[idx] = h_flip[i]
+
+                    producto = x_ext * h_shift
+                    y_val = np.sum(producto)
+                    y.append(y_val)
+
+                    # Limpiar y actualizar gráficas
+                    for ax in axs:
+                        ax.cla()
+
+                    axs[0].stem(n_ext, x_ext, basefmt=" ")
+                    axs[1].stem(n_ext, h_shift, basefmt=" ", linefmt="r-", markerfmt="ro")
+                    axs[2].stem(n_ext, producto, basefmt=" ", linefmt="orange", markerfmt="o")
+                    axs[3].stem(nb_con[:len(y)], y, basefmt=" ", linefmt="purple", markerfmt="o")
+
+                    axs[0].set_title("x[n]")
+                    axs[1].set_title(f"h[n−{n0}] desplazada e invertida")
+                    axs[2].set_title("Producto x[n]·h[n−k]")
+                    axs[3].set_title("Construcción progresiva de y[n]")
+
+                    for ax in axs:
+                        ax.set_xlabel("n")
+                        ax.set_ylabel("Amplitud")
+                        ax.grid(True)
+
+                    plt.tight_layout()
+                    placeholder.pyplot(fig)
+                    time.sleep(0.08)
+
+                # Resultado final
+                fig_final, axf = plt.subplots(figsize=(8, 4))
+                axf.stem(nb_con, yb_py, basefmt=" ")
+                axf.set_title("Convolución discreta final y[n] — Inciso B (corregido)")
+                axf.set_xlabel("n")
+                axf.set_ylabel("y[n]")
+                axf.grid(True)
+                st.pyplot(fig_final)
+
 
 # ================================================================
-# PUNTO 4: CARGA DE ARCHIVOS Y SUMA DE SEÑALES
+# PUNTO 2: COMPARACIÓN CONVOLUCIONES CONTINUAS
 # ================================================================
-elif menu == "Punto 4":
-    st.header("Punto 4: Señales muestreadas y sobre muestreo")
-
-    # Subir archivos .txt
-    st.sidebar.subheader("Carga de señales")
-    file1 = st.sidebar.file_uploader("Subir señal muestreada a 2 kHz", type=["txt"])
-    file2 = st.sidebar.file_uploader("Subir señal muestreada a 2.2 kHz", type=["txt"])
-
-    if file1 is not None and file2 is not None:
-        # Cargar los datos de los archivos
-        data1 = np.loadtxt(file1)
-        data2 = np.loadtxt(file2)
-
-        # Frecuencias
-        f1 = 2000
-        f2 = 2200
-        delta1 = 1 / f1
-        delta2 = 1 / f2
-        t1 = np.arange(len(data1)) * delta1
-        t2 = np.arange(len(data2)) * delta2
-
-        # Gráficas iniciales
-        fig, ax = plt.subplots()
-        ax.plot(t1, data1, label="Señal 1 (2 kHz)", color="blue")
-        ax.set_title("Señal 1")
-        ax.grid(True)
-        st.pyplot(fig)
-
-        fig, ax = plt.subplots()
-        ax.plot(t2, data2, label="Señal 2 (2.2 kHz)", color="orange")
-        ax.set_title("Señal 2")
-        ax.grid(True)
-        st.pyplot(fig)
-
-        # Muestreo común
-        fs = 22000  # mcm de 2000 y 2200
-        deltas = 1 / fs
-        min_time = min(t1[-1], t2[-1])
-        t_com = np.arange(0, min_time, deltas)
-
-        x1_n = np.interp(t_com, t1, data1)
-        x2_n = np.interp(t_com, t2, data2)
-
-        # Graficar señales re-muestreadas
-        fig, ax = plt.subplots()
-        ax.plot(t_com, x1_n, label="Señal 1 re-muestreada")
-        ax.legend()
-        st.pyplot(fig)
-
-        fig, ax = plt.subplots()
-        ax.plot(t_com, x2_n, label="Señal 2 re-muestreada", color="orange")
-        ax.legend()
-        st.pyplot(fig)
-
-        # Suma de señales
-        x_total = x1_n + x2_n
-        fig, ax = plt.subplots()
-        ax.plot(t_com, x_total, label="Señal total", color="green")
-        ax.set_title("Suma de Señales")
-        ax.legend()
-        ax.grid(True)
-        st.pyplot(fig)
-
-    else:
-        st.info("Por favor sube los dos archivos .txt para continuar.")
-
 elif menu == "Punto 2":
-    st.header("Punto 2: Transformaciones")
 
-    Tipo = st.sidebar.selectbox(
-        "Seleccione el tipo de señal",
-        ["Dominio continuo", "Dominio discreto"]
-    )
+    st.markdown("<h2 style='text-align:center;'>Punto 2 — Comparación de Convoluciones Continuas</h2>", unsafe_allow_html=True)
 
-    # ----------------------------------------------------------
-    # Señales continuas con transformaciones
-    # ----------------------------------------------------------
-    if Tipo == "Dominio continuo":
-        fs = 100
-        delt = 1/fs
+    delta = 0.05
 
-        # Señal continua 1
-        p1, p2, p3, p4, p5 = -2, -1, 1, 3, 4
-        t1a = np.arange(p1, p2, delt)
-        t1b = np.arange(p2, p3, delt)
-        t1c = np.arange(p3, p4, delt)
-        t1d = np.arange(p4, p5+delt, delt)
-        x1a = 2*t1a+4
-        x1b = 2*np.ones(len(t1b))
-        x1c = 3*np.ones(len(t1c))
-        x1d = -3*t1d+12
-        t1 = np.concatenate((t1a, t1b, t1c, t1d))
-        x1 = np.concatenate((x1a, x1b, x1c, x1d))
+    def u(t):
+        return np.where(t >= 0, 1, 0)
 
-        # Señal continua 2
-        p1, p2, p3, p4, p5 = -3, -2, 0, 2, 3
-        t2a = np.arange(p1, p2, delt)
-        t2b = np.arange(p2, p3, delt)
-        t2c = np.arange(p3, p4, delt)
-        t2d = np.arange(p4, p5+delt, delt)
-        x2a = t2a+3
-        x2b = (t2b/2)+3
-        x2c = -t2c+3
-        x2d = np.ones(len(t2d))
-        t2 = np.concatenate((t2a, t2b, t2c, t2d))
-        x2 = np.concatenate((x2a, x2b, x2c, x2d))
+    # --- Selección de caso ---
+    caso = st.selectbox("Selecciona el caso", ["a", "b", "c"], index=0)
+    visor = st.empty()
 
-        # ----------------------------------------------------------
-        # Definición de funciones de transformación
-        # ----------------------------------------------------------
-        def metodo1(t, retraso, escalamiento):
-            # Primero desplazamiento y luego escalamiento
-            t_desplazado = t - retraso
-            t_transformado = t_desplazado / escalamiento
-            return t_desplazado, t_transformado
+    # =============== CASO A ===============
+    if caso == "a":
+        t_x = np.arange(-1, 5 + delta, delta)
+        t_h = np.arange(0, 6 + delta, delta)
 
-        def metodo2(t, retraso, escalamiento):
-            # Primero escalamiento y luego desplazamiento
-            t_escalado = t / escalamiento
-            t_transformado = t_escalado - (retraso / escalamiento)
-            return t_escalado, t_transformado
+        x_t = np.exp(-4 * t_x / 5) * (u(t_x + 1) - u(t_x - 5))
+        h_t = np.exp(-t_h / 4) * u(t_h)
 
-        # ----------------------------------------------------------
-        # Configuración en la barra lateral
-        # ----------------------------------------------------------
-        st.sidebar.header("Configuración - Señales continuas")
-        tipo = st.sidebar.selectbox("Seleccione tipo de señal", ["Señal continua 1", "Señal continua 2"])
-        metodo = st.sidebar.selectbox("Método de transformación", ["Metodo 1", "Metodo 2"])
-        retraso = st.sidebar.number_input("Valor de t0 (desplazamiento)", value=0.0, step=0.5)
-        escala = st.sidebar.number_input("Valor de escalamiento (a)", value=1.0, step=0.5)
+        # Convolución con numpy
+        y_tpy = np.convolve(x_t, h_t) * delta
+        len_y = len(t_x) + len(t_h) - 1
+        t_y = np.arange(t_x[0] + t_h[0], t_x[0] + t_h[0] + len_y * delta, delta)
 
-        # Selección de señal base
-        if tipo == "Señal continua 1":
-            t_base, x_base = t1, x1
-        else:
-            t_base, x_base = t2, x2
+        # Convolución manual
+        t_y1 = np.arange(-5, -1, delta)
+        t_y2 = np.arange(-1, 5, delta)
+        t_y3 = np.arange(5, 20, delta)
+        y_t1 = np.zeros_like(t_y1)
+        y_t2 = (20/11) * np.exp(-t_y2/4) * (np.exp(11/20) - np.exp(-11*t_y2/20))
+        y_t3 = (20/11) * np.exp(-t_y3/4) * (np.exp(11/20) - np.exp(-11/4))
+        y_tm = np.concatenate((y_t1, y_t2, y_t3))
+        t_m = np.concatenate((t_y1, t_y2, t_y3))
 
-        # Aplicar método de transformación
-        if metodo == ("Metodo 1"):
-            # Desplazar primero
-            t_desplazada, t_final = metodo1(t_base, retraso, escala)
-            t_intermedia = t_desplazada  # desplazada
-            t_siguiente = t_final        # después escalada
-            titulos = [
-                "1. Señal original",
-                f"2. Señal desplazada (t0={retraso})",
-                f"3. Señal escalada (a={escala})",
-                "4. Señal final"
-            ]
-        else:
-            # Escalar primero
-            t_escalada, t_final = metodo2(t_base, retraso, escala)
-            t_intermedia = t_escalada    # escalada
-            t_siguiente = t_final        # después desplazada
-            titulos = [
-                "1. Señal original",
-                f"2. Señal escalada (a={escala})",
-                f"3. Señal desplazada (t0={retraso})",
-                "4. Señal final"
-            ]
+    # =============== CASO B ===============
+    elif caso == "b":
+        t_b = np.arange(-1, 6 + delta, delta)
+        t_hb = np.arange(-4, 4 + delta, delta)
 
-        # ----------------------------------------------------------
-        # Mostrar gráficas en orden
-        # ----------------------------------------------------------
-        fig, axs = plt.subplots(4, 1, figsize=(7, 12))
+        h_t = np.exp(-0.5 * t_b) * u(t_b + 1)
+        x_t = np.exp(0.5 * t_hb) * (u(t_hb + 4) - u(t_hb)) + np.exp(-0.5 * t_hb) * (u(t_hb) - u(t_hb - 4))
 
-        axs[0].plot(t_base, x_base, color="blue")
-        axs[0].set_title(titulos[0])
+        y_tpy = np.convolve(x_t, h_t) * delta
+        len_yb = len(x_t) + len(h_t) - 1
+        t_y = np.arange(t_hb[0] + t_b[0], t_hb[0] + t_b[0] + len_yb * delta, delta)
 
-        axs[1].plot(t_intermedia, x_base, color="green")
-        axs[1].set_title(titulos[1])
+        # Manual
+        tm1_b = np.arange(-6, -5, delta)
+        tm2_b = np.arange(-5, -1, delta)
+        tm3_b = np.arange(-1, 3, delta)
+        tm4_b = np.arange(3, 10, delta)
 
-        axs[2].plot(t_siguiente, x_base, color="orange")
-        axs[2].set_title(titulos[2])
+        ym1_b = np.zeros_like(tm1_b)
+        ym2_b = np.exp(1 + tm2_b/2) - np.exp(-4 - tm2_b/2)
+        ym3_b = np.exp(-tm3_b/2) * (tm3_b + 2 - np.exp(-4))
+        ym4_b = (5 - np.exp(-4)) * np.exp(-tm4_b/2)
 
-        axs[3].plot(t_final, x_base, color="red")
-        axs[3].set_title(titulos[3])
+        y_tm = np.concatenate((ym1_b, ym2_b, ym3_b, ym4_b))
+        t_m = np.concatenate((tm1_b, tm2_b, tm3_b, tm4_b))
 
-        for ax in axs: ax.grid(True)
-        plt.tight_layout()
-        st.pyplot(fig)
+    # =============== CASO C ===============
+    elif caso == "c":
+        t_c = np.arange(-6, 1 + delta, delta)
+        t_ch = np.arange(-1, 4 + delta, delta)
 
+        h_t = np.exp(t_c) * u(1 - t_c)
+        x_t = u(t_ch + 1) - u(t_ch - 4)
 
+        y_tpy = np.convolve(x_t, h_t) * delta
+        len_yc = len(x_t) + len(h_t) - 1
+        t_y = np.arange(t_ch[0] + t_c[0], t_ch[0] + t_c[0] + len_yc * delta, delta)
 
-    # ----------------------------------------------------------
-# Señales discretas con transformaciones
-# ----------------------------------------------------------
-    elif Tipo == "Dominio discreto":
-    
-        # --- Secuencia discreta 1 ---
-        n_in1, n_fin1 = -5, 16
-        n1 = np.arange(n_in1, n_fin1+1)
-        xn1 = [0,0,0,0,0,-4,0,3,5,2,-3,-1,3,6,8,3,-1,0,0,0,0,0]
+        t1_c = np.arange(-6, 0, delta)
+        t2_c = np.arange(0, 5, delta)
+        t3_c = np.arange(5, 10, delta)
 
-        # --- Secuencia discreta 2 ---
-        n_in2, n_fin2 = -10, 10
-        n2 = np.arange(n_in2, n_fin2+1)
-        xn2 = np.zeros(len(n2), dtype=float)
-        for i in n2:
-            k = i - n_in2
-            if -10 <= i <= -6:
-                xn2[k] = 0
-            elif -5 <= i <= 0:
-                xn2[k] = (3/4)**i
-            elif 1 <= i <= 5:
-                xn2[k] = (7/4)**i
-            elif 6 <= i <= 10:
-                xn2[k] = 0
-            else:
-                xn2[k] = 0
-# ====== FUNCIÓN ======
-        def trans_discreta(n, x, t0, M, metodo):
-            n_in = n[0]
-            n_fin = n[-1]
+        y1_c = np.exp(t1_c + 1) - np.exp(t1_c - 4)
+        y2_c = np.exp(1) - np.exp(t2_c - 4)
+        y3_c = np.zeros_like(t3_c)
 
-            if metodo == 1:
-                # ---- Método 1: desplazamiento → escalamiento ----
-                n_des = n - t0
+        y_tm = np.concatenate((y1_c, y2_c, y3_c))
+        t_m = np.concatenate((t1_c, t2_c, t3_c))
 
-                if M == 1:
-                    return (n_des, x)
+    # --- GRAFICAR (una debajo de otra) ---
+    fig, axs = plt.subplots(4, 1, figsize=(9, 12))
+    fig.suptitle(f"Comparación de Convoluciones — Caso {caso.upper()}", fontsize=16, fontweight="bold")
 
-                elif M == -1:
-                    nI = -n_des[::-1]
-                    x_mod = x[::-1]
-                    return (nI, x_mod)
+    # Señales originales
+    axs[0].plot(t_x if caso=="a" else t_hb if caso=="b" else t_ch, x_t, label='x(t)')
+    axs[0].plot(t_h if caso=="a" else t_b if caso=="b" else t_c, h_t, label='h(t)')
+    axs[0].set_title("Señales originales")
+    axs[0].legend(); axs[0].grid(True)
 
-                elif abs(M) > 1:
-                    # Escalamiento (submuestreo)
-                    D = int(abs(M))
-                    x_mod = x[::-D] if M < 0 else x[::D]
+    # Convolución con Python
+    axs[1].plot(t_y, y_tpy, 'r', label='np.convolve')
+    axs[1].set_title("Convolución con np.convolve")
+    axs[1].legend(); axs[1].grid(True)
 
-                    n_des_escalado = n_des / M
-                    nI = n_des_escalado[::-D] if M < 0 else n_des_escalado[::D]
+    # Convolución manual
+    axs[2].plot(t_m, y_tm, 'g', label='Manual')
+    axs[2].set_title("Convolución manual")
+    axs[2].legend(); axs[2].grid(True)
 
-                    return (nI, x_mod)
+    # Comparación
+    axs[3].plot(t_y, y_tpy, 'r', label='Python')
+    axs[3].plot(t_m, y_tm, 'g--', label='Manual')
+    axs[3].set_title("Comparación manual vs np.convolve")
+    axs[3].legend(); axs[3].grid(True)
 
-                else:  # Interpolación: -1 < M < 1
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-                    if M < 0 :
-                        xn_0[::-L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i - 1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i + 1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-
-                    if M < 0 :
-                        xn_lin[::-L] = x
-                    nI = np.linspace(n_des[0] / M, n_des[-1] / M, N)
-
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-
-            elif metodo == 2:
-                # ---- Método 2: escalamiento → desplazamiento ----
-                des_escalado = t0 / M
-
-                if M == 1:
-                    nI = n - int(des_escalado)
-                    return (nI, x)
-
-                elif M == -1:
-                    x_mod = x[::-1]
-                    n_escalado = -n[::-1]
-                    nI = n_escalado + int(des_escalado)
-                    return (nI, x_mod)
-
-                elif abs(M) > 1:
-                    D = int(abs(M))
-                    x_mod = x[::-D] if M < 0 else x[::D]
-
-                    n_escalado = n / M
-                    nI = n_escalado[::-D] if M < 0 else n_escalado[::D]
-                    nI = nI - des_escalado  # Aplicar desplazamiento
-
-                    return (nI, x_mod)
-
-                else:  # Interpolación: -1 < M < 1
-                    L = int(round(1.0 / abs(M)))
-                    L_n = len(x)
-                    N = L * (L_n - 1) + 1
-
-                    xn_0 = np.zeros(N, dtype=float)
-                    xn_0[::L] = x
-                    if M < 0 :
-                        xn_0[::-L] = x
-
-                    xn_esc = xn_0.copy()
-                    for i in range(1, N):
-                        if xn_esc[i] == 0:
-                            xn_esc[i] = xn_esc[i - 1]
-
-                    xn_lin = np.zeros(N, dtype=float)
-                    k = 0
-                    for i in range(L_n - 1):
-                        xi = x[i]
-                        dx = x[i + 1] - xi
-                        xn_lin[k] = xi
-                        for j in range(1, L):
-                            xn_lin[k + j] = xi + (j / L) * dx
-                        k += L
-                    xn_lin[-1] = x[-1]
-                    if M < 0 : 
-                        xn_lin [::-L] = x
-
-                    # Tiempo escalado y desplazado
-                    n_escalado = n / M
-                    nI = np.linspace(n_escalado[0] - des_escalado, n_escalado[-1] - des_escalado, N)
-
-                    if M < 0:
-                        nI = -nI[::-1]
-                        xn_0 = xn_0[::-1]
-                        xn_esc = xn_esc[::-1]
-                        xn_lin = xn_lin[::-1]
-
-                    return (nI, xn_0, xn_esc, xn_lin)
-
-            else:
-                raise ValueError("Método no válido (use 1 o 2).")
-
-        # =========== AQUÍ SÓLO CAMBIAMOS LAS ENTRADAS / SALIDAS ==========
-        st.sidebar.header("Configuración - Señales discretas")
-        op = st.sidebar.selectbox("Seleccione la secuencia discreta a transformar", [1, 2])
-        metodo = st.sidebar.selectbox("Seleccione el método", [1, 2])
-        t0 = st.sidebar.number_input("Ingrese el valor del desplazamiento (entero):", value=0, step=1)
-        M = st.sidebar.number_input("Ingrese escalamiento:", value=1.0, step=0.5)
-
-        if op == 1:
-            if abs(M)>=1:
-                n_out, x_out = trans_discreta(n1, xn1, t0, M, metodo)
-                fig, ax = plt.subplots()
-                ax.stem(n_out, x_out)
-                ax.set_title(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
-                ax.grid()
-                st.pyplot(fig)
-            elif  -1 < M < 1 : # --> INTERPOLACIONES
-                nI, x0, xesc, xlin = trans_discreta(n1, xn1, t0, M, metodo)
-                fig, axs = plt.subplots(3,1,figsize=(6,8))
-                axs[0].stem(nI, x0);   axs[0].set_title('Interp. por ceros');  axs[0].grid()
-                axs[1].stem(nI, xesc); axs[1].set_title('Interp. por escalón');axs[1].grid()
-                axs[2].stem(nI, xlin); axs[2].set_title('Interp. lineal');     axs[2].grid()
-                fig.suptitle(f'Secuencia 1 (método {metodo}) — t0={t0}, M={M}')
-                plt.tight_layout()
-                st.pyplot(fig)
-            else:
-                st.error("Error.")
-
-        elif op == 2:
-            if abs(M)>=1:
-                n_out, x_out = trans_discreta(n2, xn2, t0, M, metodo)
-                fig, ax = plt.subplots()
-                ax.stem(n_out, x_out)
-                ax.set_title(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
-                ax.grid()
-                st.pyplot(fig)
-            elif -1 < M < 1:
-                nI, x0, xesc, xlin = trans_discreta(n2, xn2, t0, M, metodo)
-                fig, axs = plt.subplots(3,1,figsize=(6,8))
-                axs[0].stem(nI, x0);   axs[0].set_title('Interp. por ceros');  axs[0].grid()
-                axs[1].stem(nI, xesc); axs[1].set_title('Interp. por escalón');axs[1].grid()
-                axs[2].stem(nI, xlin); axs[2].set_title('Interp. lineal');     axs[2].grid()
-                fig.suptitle(f'Secuencia 2 (método {metodo}) — t0={t0}, M={M}')
-                plt.tight_layout()
-                st.pyplot(fig)
-            else:
-                st.error("Error.")
-
-        else:
-            st.error("Opción no válida")
-
-
-# ================================================================
-# INTEGRANTES
-# ================================================================
-st.sidebar.markdown("---")  
-st.sidebar.subheader("👩‍🎓 Integrantes")
-st.sidebar.write("- Sthefany Morales\n- Alejandro Rovira\n- Sebastian Pupo")
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    visor.pyplot(fig, clear_figure=True)
