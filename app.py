@@ -14,14 +14,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.sidebar.title(" Laboratorio Nº 3")
 # -------------------
 # Menú lateral
 # -------------------
-st.sidebar.title("📘 Laboratorio Nº 1")
-menu = st.sidebar.selectbox(
-    "Selecciona el punto",
-    ["Inicio", "Punto 1", "Punto 2", "Punto 3", "Punto 4"]
-)
+# ----- Barra lateral: menú y créditos -----
+menu = st.sidebar.selectbox("Selecciona el punto del proyecto", 
+                            ["Inicio","Punto 1", "Punto 2", "Punto 3", "Punto 4"])
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("📋 Integrantes del Proyecto")
+st.sidebar.markdown("""
+- Sebastian Pupo  
+- Sthefany Morales  
+- Alejandro Rovira
+""")
 
 # ================================================================
 # INICIO
@@ -579,4 +586,5 @@ elif menu == "Punto 2":
         st.audio(senal_rec.astype(np.float32), sample_rate=int(fs_mod), format='audio/wav')
         st.audio(senal_base.astype(np.float32), sample_rate=int(fs_mod), format='audio/wav')
         st.success("✅ Fin del procesamiento.")
+
 
